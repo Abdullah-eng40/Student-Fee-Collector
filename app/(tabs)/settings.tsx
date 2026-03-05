@@ -1,18 +1,21 @@
 import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { useStudents } from "@/lib/student-context";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { CURRENCY_SYMBOL } from "@/lib/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
-import * as FileSystem from "expo-file-system/legacy";
-import * as Sharing from "expo-sharing";
 import * as storage from "@/lib/storage";
+import { sendBulkUnpaidNotifications } from "@/lib/notification-service";
+import { exportAsXLS, exportAsPDF, exportAsCSV } from "@/lib/export-service";
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const colors = useColors();
   const { students, payments, refreshData } = useStudents();
   const [exporting, setExporting] = useState(false);
+  const [sendingNotifications, setSendingNotifications] = useState(false);
 
   // Calculate current month payments
   const currentDate = new Date();
@@ -22,48 +25,75 @@ export default function SettingsScreen() {
     (p) => p.month === currentMonth && p.year === currentYear
   ).length;
 
-  const handleExportData = async () => {
+  const unpaidCount = students.length - currentMonthPayments;
+
+  const handleExportCSV = async () => {
     try {
       setExporting(true);
-
-      // Prepare CSV data
-      let csvContent = "Student Name,Class,Monthly Fee,Total Payments,Total Amount Paid,Last Payment Date\n";
-
-      for (const student of students) {
-        const studentPayments = payments.filter((p) => p.studentId === student.id);
-        const totalAmount = studentPayments.reduce((sum, p) => sum + p.amount, 0);
-        const lastPayment = studentPayments.sort(
-          (a, b) => new Date(b.paidDate).getTime() - new Date(a.paidDate).getTime()
-        )[0];
-
-        const lastPaymentDate = lastPayment
-          ? new Date(lastPayment.paidDate).toLocaleDateString("en-IN")
-          : "N/A";
-
-        csvContent += `"${student.name}","${student.class}",${student.monthlyFee},${studentPayments.length},${totalAmount},"${lastPaymentDate}"\n`;
-      }
-
-      // Save to file
-      const fileName = `student_fees_${new Date().getTime()}.csv`;
-      const filePath = `${FileSystem.cacheDirectory}${fileName}`;
-
-      await FileSystem.writeAsStringAsync(filePath, csvContent);
-
-      // Share file
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(filePath, {
-          mimeType: "text/csv",
-          dialogTitle: "Export Student Fee Data",
-        });
-      } else {
-        Alert.alert("Success", "Data exported to file");
-      }
+      await exportAsCSV(students, payments);
+      Alert.alert("Success", "CSV file exported successfully");
     } catch (error) {
-      Alert.alert("Error", "Failed to export data");
+      Alert.alert("Error", "Failed to export CSV file");
       console.error(error);
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleExportXLS = async () => {
+    try {
+      setExporting(true);
+      await exportAsXLS(students, payments);
+      Alert.alert("Success", "Excel file exported successfully");
+    } catch (error) {
+      Alert.alert("Error", "Failed to export Excel file");
+      console.error(error);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      setExporting(true);
+      await exportAsPDF(students, payments);
+      Alert.alert("Success", "PDF file exported successfully");
+    } catch (error) {
+      Alert.alert("Error", "Failed to export PDF file");
+      console.error(error);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleSendNotifications = async () => {
+    if (unpaidCount === 0) {
+      Alert.alert("No Unpaid Fees", "All students have paid their fees for this month!");
+      return;
+    }
+
+    Alert.alert(
+      "Send Notifications",
+      `Send fee reminder notifications to ${unpaidCount} student(s) with unpaid fees?`,
+      [
+        { text: "Cancel", onPress: () => {}, style: "cancel" },
+        {
+          text: "Send",
+          onPress: async () => {
+            try {
+              setSendingNotifications(true);
+              const sent = await sendBulkUnpaidNotifications(students, payments);
+              Alert.alert("Success", `Notifications sent to ${sent} student(s)`);
+            } catch (error) {
+              Alert.alert("Error", "Failed to send notifications");
+              console.error(error);
+            } finally {
+              setSendingNotifications(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleClearData = () => {
@@ -126,28 +156,138 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Notifications Section */}
+        <View className="mb-6">
+          <Text className="text-sm font-semibold text-foreground mb-3">Notifications</Text>
+          <View className="gap-3">
+            <TouchableOpacity
+              onPress={() => router.push("/notification-settings")}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="notifications" size={20} color="#ffffff" />
+              <Text className="text-white font-semibold ml-3">Notification Settings</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/notification-history")}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="history" size={20} color="#ffffff" />
+              <Text className="text-white font-semibold ml-3">Notification History</Text>
+            </TouchableOpacity>
+
+            {unpaidCount > 0 && (
+              <TouchableOpacity
+                onPress={handleSendNotifications}
+                disabled={sendingNotifications}
+                style={{
+                  backgroundColor: colors.warning,
+                  borderRadius: 8,
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  opacity: sendingNotifications ? 0.6 : 1,
+                }}
+                activeOpacity={0.8}
+              >
+                <MaterialIcons name="send" size={20} color="#ffffff" />
+                <Text className="text-white font-semibold ml-3">
+                  {sendingNotifications ? "Sending..." : `Send Reminders (${unpaidCount})`}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
         {/* Export Section */}
         <View className="mb-6">
-          <Text className="text-sm font-semibold text-foreground mb-3">Data Management</Text>
-          <TouchableOpacity
-            onPress={handleExportData}
-            disabled={exporting}
-            style={{
-              backgroundColor: colors.primary,
-              borderRadius: 8,
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              flexDirection: "row",
-              alignItems: "center",
-              opacity: exporting ? 0.6 : 1,
-            }}
-            activeOpacity={0.8}
-          >
-            <MaterialIcons name="download" size={20} color="#ffffff" />
-            <Text className="text-white font-semibold ml-3">
-              {exporting ? "Exporting..." : "Export as CSV"}
-            </Text>
-          </TouchableOpacity>
+          <Text className="text-sm font-semibold text-foreground mb-3">Export Data</Text>
+          <View className="gap-3">
+            <TouchableOpacity
+              onPress={handleExportCSV}
+              disabled={exporting || students.length === 0}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                opacity: exporting || students.length === 0 ? 0.6 : 1,
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="table-chart" size={20} color="#ffffff" />
+              <Text className="text-white font-semibold ml-3">
+                {exporting ? "Exporting..." : "Export as CSV"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleExportXLS}
+              disabled={exporting || students.length === 0}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                opacity: exporting || students.length === 0 ? 0.6 : 1,
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="description" size={20} color="#ffffff" />
+              <Text className="text-white font-semibold ml-3">
+                {exporting ? "Exporting..." : "Export as XLS"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleExportPDF}
+              disabled={exporting || students.length === 0}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+                opacity: exporting || students.length === 0 ? 0.6 : 1,
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="picture-as-pdf" size={20} color="#ffffff" />
+              <Text className="text-white font-semibold ml-3">
+                {exporting ? "Exporting..." : "Export as PDF"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {students.length === 0 && (
+            <View className="bg-warning/10 rounded-lg p-3 border border-warning/20 mt-3">
+              <Text className="text-xs text-warning">
+                Add students first to enable export functionality
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Danger Zone */}

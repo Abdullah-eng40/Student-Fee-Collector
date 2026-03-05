@@ -62,3 +62,26 @@
 - [x] Add logo/icon to Payment History screen
 - [x] Add logo/icon to Settings screen
 - [ ] Test all new features end-to-end
+
+## Push Notification System (New)
+
+- [x] Set up expo-notifications package
+- [x] Create notification service utility
+- [x] Implement notification permission handling
+- [x] Create notification scheduling logic
+- [x] Add notification preferences screen
+- [x] Create notification history tracking
+- [x] Add manual send notification button
+- [x] Create scheduled notification task manager
+- [x] Test notification delivery
+- [x] Add notification badge counter
+
+## Export Feature (XLS/PDF)
+
+- [x] Create XLS export utility using xlsx library
+- [x] Create PDF export utility using pdf-lib
+- [x] Add XLS export button to Settings screen
+- [x] Add PDF export button to Settings screen
+- [x] Test XLS export functionality
+- [x] Test PDF export functionality
+- [x] Verify exported files contain all student and payment data
