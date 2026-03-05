@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
@@ -112,6 +112,10 @@ export default function StudentDetailScreen() {
     );
   }
 
+  // Split months into two rows (6 months each)
+  const firstRow = MONTH_SHORT.slice(0, 6);
+  const secondRow = MONTH_SHORT.slice(6, 12);
+
   return (
     <ScreenContainer className="p-4">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -138,39 +142,127 @@ export default function StudentDetailScreen() {
           </View>
         </View>
 
-        {/* Monthly Payment Grid */}
+        {/* Monthly Payment Grid - 2 Rows */}
         <View className="mb-6">
           <Text className="text-lg font-semibold text-foreground mb-4">Monthly Payments</Text>
-          <View className="flex-row flex-wrap gap-2">
-            {MONTH_SHORT.map((month, index) => {
+
+          {/* First Row - Jan to Jun */}
+          <View className="flex-row justify-between gap-2 mb-3">
+            {firstRow.map((month, index) => {
               const isPaid = studentPayments.some((p) => p.month === index && p.year === currentYear);
+              const paidDate = studentPayments.find((p) => p.month === index && p.year === currentYear)?.paidDate;
+
               return (
                 <TouchableOpacity
                   key={index}
                   onPress={() => handleMarkPayment(index)}
                   style={{
                     backgroundColor: isPaid ? colors.success : colors.surface,
-                    borderWidth: isPaid ? 0 : 1,
-                    borderColor: colors.border,
-                    borderRadius: 8,
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    flex: 0.31,
+                    borderWidth: 2,
+                    borderColor: isPaid ? colors.success : colors.border,
+                    borderRadius: 12,
+                    paddingVertical: 16,
+                    paddingHorizontal: 8,
+                    flex: 1,
                     alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: 80,
                   }}
                   activeOpacity={0.7}
                 >
                   <Text
                     style={{
                       color: isPaid ? "#ffffff" : colors.foreground,
-                      fontWeight: "600",
-                      fontSize: 14,
+                      fontWeight: "700",
+                      fontSize: 13,
+                      marginBottom: 4,
                     }}
                   >
                     {month}
                   </Text>
-                  {isPaid && (
-                    <MaterialIcons name="check" size={16} color="#ffffff" style={{ marginTop: 4 }} />
+                  {isPaid ? (
+                    <View className="items-center">
+                      <MaterialIcons name="check-circle" size={24} color="#ffffff" />
+                      {paidDate && (
+                        <Text
+                          style={{
+                            color: "#ffffff",
+                            fontSize: 10,
+                            marginTop: 4,
+                            fontWeight: "500",
+                          }}
+                        >
+                          {new Date(paidDate).toLocaleDateString("en-IN", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </Text>
+                      )}
+                    </View>
+                  ) : (
+                    <MaterialIcons name="radio-button-unchecked" size={24} color={colors.border} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Second Row - Jul to Dec */}
+          <View className="flex-row justify-between gap-2">
+            {secondRow.map((month, index) => {
+              const monthIndex = index + 6;
+              const isPaid = studentPayments.some((p) => p.month === monthIndex && p.year === currentYear);
+              const paidDate = studentPayments.find((p) => p.month === monthIndex && p.year === currentYear)?.paidDate;
+
+              return (
+                <TouchableOpacity
+                  key={monthIndex}
+                  onPress={() => handleMarkPayment(monthIndex)}
+                  style={{
+                    backgroundColor: isPaid ? colors.success : colors.surface,
+                    borderWidth: 2,
+                    borderColor: isPaid ? colors.success : colors.border,
+                    borderRadius: 12,
+                    paddingVertical: 16,
+                    paddingHorizontal: 8,
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minHeight: 80,
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={{
+                      color: isPaid ? "#ffffff" : colors.foreground,
+                      fontWeight: "700",
+                      fontSize: 13,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {month}
+                  </Text>
+                  {isPaid ? (
+                    <View className="items-center">
+                      <MaterialIcons name="check-circle" size={24} color="#ffffff" />
+                      {paidDate && (
+                        <Text
+                          style={{
+                            color: "#ffffff",
+                            fontSize: 10,
+                            marginTop: 4,
+                            fontWeight: "500",
+                          }}
+                        >
+                          {new Date(paidDate).toLocaleDateString("en-IN", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </Text>
+                      )}
+                    </View>
+                  ) : (
+                    <MaterialIcons name="radio-button-unchecked" size={24} color={colors.border} />
                   )}
                 </TouchableOpacity>
               );

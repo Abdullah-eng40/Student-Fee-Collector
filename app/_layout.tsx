@@ -90,6 +90,8 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="oauth/callback" />
+              <Stack.Screen name="dashboard" />
+              <Stack.Screen name="bulk-import" />
             </Stack>
             <StatusBar style="auto" />
           </StudentProvider>

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { useStudents } from "@/lib/student-context";
 import { useRouter } from "expo-router";
@@ -153,6 +153,44 @@ export default function SettingsScreen() {
             <Text className="text-sm font-semibold text-success">
               {CURRENCY_SYMBOL}{payments.reduce((sum, p) => sum + p.amount, 0)}
             </Text>
+          </View>
+        </View>
+
+        {/* Quick Actions */}
+        <View className="mb-6">
+          <Text className="text-sm font-semibold text-foreground mb-3">Quick Actions</Text>
+          <View className="gap-3">
+            <TouchableOpacity
+              onPress={() => router.push("../dashboard")}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="analytics" size={20} color="#ffffff" />
+              <Text className="text-white font-semibold ml-3">View Dashboard</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("../bulk-import")}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="upload-file" size={20} color="#ffffff" />
+              <Text className="text-white font-semibold ml-3">Bulk Import Students</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
