@@ -46,7 +46,7 @@ export default function HistoryScreen() {
     <View className="bg-surface rounded-lg p-4 mb-3 border border-border">
       <View className="flex-row items-center justify-between mb-2">
         <Text className="text-base font-semibold text-foreground">{item.studentName}</Text>
-        <Text className="text-lg font-bold text-success">₹{item.amount}</Text>
+        <Text className="text-lg font-bold text-success">RS{item.amount}</Text>
       </View>
       <View className="flex-row items-center justify-between">
         <Text className="text-sm text-muted">
