@@ -75,7 +75,7 @@ export default function HistoryScreen() {
             </View>
             <View className="items-center">
               <Text className="text-2xl font-bold text-success">
-                ₹{sortedPayments.reduce((sum, p) => sum + p.amount, 0)}
+                RS{sortedPayments.reduce((sum, p) => sum + p.amount, 0)}
               </Text>
               <Text className="text-xs text-muted mt-1">Total Amount</Text>
             </View>
