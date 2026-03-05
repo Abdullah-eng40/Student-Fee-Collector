@@ -32,7 +32,7 @@ const env = {
   appSlug: "student-fee-collector",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
-  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663390388689/R8hv3yi8WLagUCDyJGMTmX/icon-SPtAznZBLk3iKjKYJRJUt2.webp",
+  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663390388689/R8hv3yi8WLagUCDyJGMTmX/icon-2v7tDxwo6afRybkPpKew9x.webp",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,

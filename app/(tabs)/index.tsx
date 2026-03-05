@@ -1,9 +1,9 @@
-import { ScrollView, Text, View, TouchableOpacity, FlatList, Alert } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, FlatList, Alert, TextInput } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { useStudents } from "@/lib/student-context";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Payment } from "@/lib/types";
+import { Payment, CURRENCY_SYMBOL } from "@/lib/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 
@@ -12,6 +12,8 @@ export default function HomeScreen() {
   const colors = useColors();
   const { students, payments, loading, error, refreshData } = useStudents();
   const [studentPaymentStatus, setStudentPaymentStatus] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredStudents, setFilteredStudents] = useState(students);
 
   useEffect(() => {
     refreshData();
@@ -33,6 +35,20 @@ export default function HomeScreen() {
     setStudentPaymentStatus(status);
   }, [students, payments]);
 
+  // Filter students based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredStudents(students);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = students.filter(
+        (student) =>
+          student.name.toLowerCase().includes(query) || student.class.toLowerCase().includes(query)
+      );
+      setFilteredStudents(filtered);
+    }
+  }, [searchQuery, students]);
+
   const handleAddStudent = () => {
     router.push("/add-student");
   };
@@ -53,7 +69,7 @@ export default function HomeScreen() {
           <View className="flex-1">
             <Text className="text-lg font-semibold text-foreground">{item.name}</Text>
             <Text className="text-sm text-muted mt-1">
-              Class: {item.class} | Fee: ₹{item.monthlyFee}
+              Class: {item.class} | Fee: {CURRENCY_SYMBOL}{item.monthlyFee}
             </Text>
           </View>
           <View className="items-center ml-4">
@@ -82,6 +98,28 @@ export default function HomeScreen() {
           <Text className="text-sm text-muted mt-1">Manage student fee collection</Text>
         </View>
 
+        {/* Search Bar */}
+        <View className="mb-4 flex-row items-center bg-surface rounded-lg border border-border px-3 py-2">
+          <MaterialIcons name="search" size={20} color={colors.muted} />
+          <TextInput
+            placeholder="Search by name or class"
+            placeholderTextColor={colors.muted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={{
+              flex: 1,
+              marginLeft: 8,
+              fontSize: 14,
+              color: colors.foreground,
+            }}
+          />
+          {searchQuery !== "" && (
+            <TouchableOpacity onPress={() => setSearchQuery("")} style={{ padding: 4 }}>
+              <MaterialIcons name="close" size={20} color={colors.muted} />
+            </TouchableOpacity>
+          )}
+        </View>
+
         {/* Loading State */}
         {loading && (
           <View className="flex-1 items-center justify-center">
@@ -107,10 +145,21 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* No Search Results */}
+        {!loading && students.length > 0 && filteredStudents.length === 0 && (
+          <View className="flex-1 items-center justify-center">
+            <MaterialIcons name="search-off" size={48} color={colors.muted} />
+            <Text className="text-lg font-semibold text-foreground mt-4">No Results</Text>
+            <Text className="text-sm text-muted text-center mt-2">
+              No students match "{searchQuery}"
+            </Text>
+          </View>
+        )}
+
         {/* Student List */}
-        {!loading && students.length > 0 && (
+        {!loading && filteredStudents.length > 0 && (
           <FlatList
-            data={students}
+            data={filteredStudents}
             renderItem={renderStudentItem}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}

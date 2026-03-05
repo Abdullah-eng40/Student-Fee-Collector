@@ -40,3 +40,25 @@
 - [x] Update app.config.ts with app name and logo
 - [ ] Final UI review and polish
 - [ ] Create checkpoint for deployment
+
+## Edit Student Feature (New)
+
+- [x] Create Edit Student screen component
+- [x] Add edit button to Student Detail screen
+- [x] Implement form validation for edit screen
+- [x] Update student context with edit functionality (already existed)
+- [x] Add navigation to edit screen
+- [x] Test edit functionality end-to-end
+- [ ] Update skill documentation with edit feature
+
+## User Requested Changes
+
+- [x] Replace currency symbol from ₹ to RS throughout app
+- [x] Regenerate app logo with RS instead of ₹
+- [x] Add search bar to Home screen
+- [ ] Add download as XLS option
+- [ ] Add download as PDF option
+- [x] Add current month payment count to stats headers
+- [x] Add logo/icon to Payment History screen
+- [x] Add logo/icon to Settings screen
+- [ ] Test all new features end-to-end

@@ -3,7 +3,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
 import { useStudents } from "@/lib/student-context";
-import { Student, Payment, MONTHS } from "@/lib/types";
+import { Student, Payment, MONTHS, CURRENCY_SYMBOL } from "@/lib/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 
@@ -47,7 +47,7 @@ export default function PaymentHistoryScreen() {
         <Text className="text-sm text-muted mt-1">Paid on {formatDate(item.paidDate)}</Text>
       </View>
       <View className="items-end">
-        <Text className="text-lg font-bold text-success">₹{item.amount}</Text>
+        <Text className="text-lg font-bold text-success">{CURRENCY_SYMBOL}{item.amount}</Text>
       </View>
     </View>
   );
@@ -68,6 +68,7 @@ export default function PaymentHistoryScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
             <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
           </TouchableOpacity>
+          <MaterialIcons name="history" size={28} color={colors.primary} style={{ marginRight: 8 }} />
           <View className="flex-1">
             <Text className="text-2xl font-bold text-foreground">Payment History</Text>
             <Text className="text-sm text-muted mt-1">{student.name}</Text>
@@ -75,16 +76,18 @@ export default function PaymentHistoryScreen() {
         </View>
 
         {/* Payment Stats */}
-        <View className="bg-surface rounded-lg p-4 mb-6 border border-border flex-row justify-around">
-          <View className="items-center">
-            <Text className="text-2xl font-bold text-primary">{studentPayments.length}</Text>
-            <Text className="text-xs text-muted mt-1">Total Payments</Text>
-          </View>
-          <View className="items-center">
-            <Text className="text-2xl font-bold text-success">
-              ₹{studentPayments.reduce((sum, p) => sum + p.amount, 0)}
-            </Text>
-            <Text className="text-xs text-muted mt-1">Amount Paid</Text>
+        <View className="bg-surface rounded-lg p-4 mb-6 border border-border">
+          <View className="flex-row justify-around">
+            <View className="items-center">
+              <Text className="text-2xl font-bold text-primary">{studentPayments.length}</Text>
+              <Text className="text-xs text-muted mt-1">Total Payments</Text>
+            </View>
+            <View className="items-center">
+              <Text className="text-2xl font-bold text-success">
+                {CURRENCY_SYMBOL}{studentPayments.reduce((sum, p) => sum + p.amount, 0)}
+              </Text>
+              <Text className="text-xs text-muted mt-1">Amount Paid</Text>
+            </View>
           </View>
         </View>
 

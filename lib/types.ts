@@ -47,3 +47,8 @@ export const MONTHS = [
 ];
 
 export const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Currency symbol for Indian Rupee
+ */
+export const CURRENCY_SYMBOL = "RS";

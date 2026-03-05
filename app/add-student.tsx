@@ -3,6 +3,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useStudents } from "@/lib/student-context";
+import { CURRENCY_SYMBOL } from "@/lib/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 
@@ -106,7 +107,7 @@ export default function AddStudentScreen() {
 
           {/* Fee Field */}
           <View>
-            <Text className="text-sm font-semibold text-foreground mb-2">Monthly Fee (₹)</Text>
+            <Text className="text-sm font-semibold text-foreground mb-2">Monthly Fee ({CURRENCY_SYMBOL})</Text>
             <TextInput
               placeholder="Enter monthly fee amount"
               placeholderTextColor={colors.muted}
