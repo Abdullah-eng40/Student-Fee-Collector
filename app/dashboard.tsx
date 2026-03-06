@@ -24,8 +24,8 @@ export default function DashboardScreen() {
   const currentMonthExpected = students.reduce((sum, s) => sum + s.monthlyFee, 0);
   const currentMonthCompletion = students.length > 0 ? (currentMonthPayments.length / students.length) * 100 : 0;
 
-  // Calculate monthly trends (last 6 months)
-  const monthlyTrends = Array.from({ length: 6 }, (_, i) => {
+  // Calculate monthly trends (last 3 months)
+  const monthlyTrends = Array.from({ length: 3 }, (_, i) => {
     const date = new Date(currentYear, currentMonth - i, 1);
     const month = date.getMonth();
     const year = date.getFullYear();
