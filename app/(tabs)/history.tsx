@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, ScrollView } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { useStudents } from "@/lib/student-context";
 import { useEffect, useState } from "react";
@@ -59,7 +59,7 @@ export default function HistoryScreen() {
 
   return (
     <ScreenContainer className="p-4">
-      <View className="flex-1">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
         {/* Header */}
         <View className="mb-6">
           <Text className="text-3xl font-bold text-foreground">Payment History</Text>
@@ -84,7 +84,7 @@ export default function HistoryScreen() {
 
         {/* Empty State */}
         {sortedPayments.length === 0 && (
-          <View className="flex-1 items-center justify-center">
+          <View className="flex-1 items-center justify-center py-8">
             <MaterialIcons name="receipt" size={48} color={colors.muted} />
             <Text className="text-lg font-semibold text-foreground mt-4">No Payments Yet</Text>
             <Text className="text-sm text-muted text-center mt-2">
@@ -103,7 +103,7 @@ export default function HistoryScreen() {
             contentContainerStyle={{ flexGrow: 1 }}
           />
         )}
-      </View>
+      </ScrollView>
     </ScreenContainer>
   );
 }

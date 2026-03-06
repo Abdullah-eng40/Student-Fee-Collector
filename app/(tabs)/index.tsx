@@ -91,7 +91,7 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer className="p-4">
-      <View className="flex-1">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
         {/* Header */}
         <View className="mb-6">
           <Text className="text-3xl font-bold text-foreground">Students</Text>
@@ -122,7 +122,7 @@ export default function HomeScreen() {
 
         {/* Loading State */}
         {loading && (
-          <View className="flex-1 items-center justify-center">
+          <View className="flex-1 items-center justify-center py-8">
             <Text className="text-muted">Loading students...</Text>
           </View>
         )}
@@ -136,7 +136,7 @@ export default function HomeScreen() {
 
         {/* Empty State */}
         {!loading && students.length === 0 && (
-          <View className="flex-1 items-center justify-center">
+          <View className="flex-1 items-center justify-center py-8">
             <MaterialIcons name="school" size={48} color={colors.muted} />
             <Text className="text-lg font-semibold text-foreground mt-4">No Students Yet</Text>
             <Text className="text-sm text-muted text-center mt-2">
@@ -147,7 +147,7 @@ export default function HomeScreen() {
 
         {/* No Search Results */}
         {!loading && students.length > 0 && filteredStudents.length === 0 && (
-          <View className="flex-1 items-center justify-center">
+          <View className="flex-1 items-center justify-center py-8">
             <MaterialIcons name="search-off" size={48} color={colors.muted} />
             <Text className="text-lg font-semibold text-foreground mt-4">No Results</Text>
             <Text className="text-sm text-muted text-center mt-2">
@@ -166,26 +166,26 @@ export default function HomeScreen() {
             contentContainerStyle={{ flexGrow: 1 }}
           />
         )}
-      </View>
 
-      {/* Add Student Button */}
-      <TouchableOpacity
-        onPress={handleAddStudent}
-        style={{
-          backgroundColor: colors.primary,
-          borderRadius: 12,
-          paddingVertical: 14,
-          paddingHorizontal: 24,
-          marginTop: 16,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        activeOpacity={0.8}
-      >
-        <MaterialIcons name="add" size={24} color="#ffffff" />
-        <Text className="text-white font-semibold ml-2">Add Student</Text>
-      </TouchableOpacity>
+        {/* Add Student Button */}
+        <TouchableOpacity
+          onPress={handleAddStudent}
+          style={{
+            backgroundColor: colors.primary,
+            borderRadius: 12,
+            paddingVertical: 14,
+            paddingHorizontal: 24,
+            marginTop: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          activeOpacity={0.8}
+        >
+          <MaterialIcons name="add" size={24} color="#ffffff" />
+          <Text className="text-white font-semibold ml-2">Add Student</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </ScreenContainer>
   );
 }

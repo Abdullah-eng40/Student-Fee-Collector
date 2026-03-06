@@ -56,20 +56,24 @@ describe("Export Service", () => {
     },
   ];
 
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
   const mockPayments: Payment[] = [
     {
       id: "p1",
       studentId: "1",
-      month: 0,
-      year: 2026,
+      month: currentMonth,
+      year: currentYear,
       amount: 5000,
       paidDate: new Date().toISOString(),
     },
     {
       id: "p2",
       studentId: "2",
-      month: 0,
-      year: 2026,
+      month: currentMonth,
+      year: currentYear,
       amount: 5000,
       paidDate: new Date().toISOString(),
     },
@@ -84,7 +88,7 @@ describe("Export Service", () => {
       expect(FileSystem.writeAsStringAsync).toHaveBeenCalled();
       const call = vi.mocked(FileSystem.writeAsStringAsync).mock.calls[0];
       expect(call[0]).toContain("student_fees_");
-      expect(call[1]).toContain("Student Name,Class,Monthly Fee");
+      expect(call[1]).toContain("Name,Class,Fee,Submit Date,Total Amount Collected");
       expect(call[1]).toContain("John Doe");
       expect(call[1]).toContain("Jane Smith");
     });
@@ -137,16 +141,16 @@ describe("Export Service", () => {
       expect(call[1]).toContain("Jane Smith");
     });
 
-    it("should include payment details in PDF", async () => {
+    it("should include current month payment details in PDF", async () => {
       vi.mocked(FileSystem.writeAsStringAsync).mockResolvedValueOnce(undefined);
 
       await exportAsPDF(mockStudents, mockPayments);
 
       const call = vi.mocked(FileSystem.writeAsStringAsync).mock.calls[0];
       const content = call[1] as string;
-      expect(content).toContain("Payment Details");
+      expect(content).toContain("Current Month Payment Status");
       expect(content).toContain("Total Students");
-      expect(content).toContain("Total Payments");
+      expect(content).toContain("Fees Paid");
     });
 
     it("should handle export errors gracefully", async () => {

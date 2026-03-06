@@ -117,3 +117,12 @@
 - [x] Add icon to History tab
 - [x] Add icon to Settings tab
 - [x] Verify icons display correctly on all platforms
+
+## Scroll and Export Fixes
+
+- [x] Add ScrollView to Home tab
+- [x] Add ScrollView to History tab
+- [x] Fix XLS export to show only current month data
+- [x] Fix PDF export to show only current month data
+- [x] Update export columns to: Name, Class, Fee, Submit Date, Total Amount
+- [x] Test export functionality with current month data

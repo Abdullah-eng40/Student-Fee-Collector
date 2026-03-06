@@ -4,93 +4,65 @@ import XLSX from "xlsx";
 import { Student, Payment, CURRENCY_SYMBOL } from "./types";
 
 /**
- * Export student payment data as XLS file
+ * Get current month and year
+ */
+function getCurrentMonthYear() {
+  const now = new Date();
+  return {
+    month: now.getMonth(),
+    year: now.getFullYear(),
+  };
+}
+
+/**
+ * Export current month student payment data as XLS file
+ * Columns: Name, Class, Fee, Submit Date, Total Amount Collected (from all students)
  */
 export async function exportAsXLS(
   students: Student[],
   payments: Payment[]
 ): Promise<string | null> {
   try {
+    const { month, year } = getCurrentMonthYear();
+
+    // Filter payments for current month only
+    const currentMonthPayments = payments.filter((p) => p.month === month && p.year === year);
+
+    // Calculate total amount collected from all students in current month
+    const totalAmountCollected = currentMonthPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    // Create export data with 6 columns
+    const exportData = students.map((student) => {
+      const studentPayment = currentMonthPayments.find((p) => p.studentId === student.id);
+      const submitDate = studentPayment
+        ? new Date(studentPayment.paidDate).toLocaleDateString("en-IN")
+        : "Not Paid";
+
+      return {
+        Name: student.name,
+        Class: student.class,
+        Fee: student.monthlyFee,
+        "Submit Date": submitDate,
+        "Total Amount Collected": totalAmountCollected,
+        Status: studentPayment ? "Paid" : "Pending",
+      };
+    });
+
     // Create workbook
     const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.json_to_sheet(exportData);
 
-    // Sheet 1: Student Summary
-    const summaryData = students.map((student) => {
-      const studentPayments = payments.filter((p) => p.studentId === student.id);
-      const totalAmount = studentPayments.reduce((sum, p) => sum + p.amount, 0);
-      const lastPayment = studentPayments.sort(
-        (a, b) => new Date(b.paidDate).getTime() - new Date(a.paidDate).getTime()
-      )[0];
+    // Set column widths
+    sheet["!cols"] = [
+      { wch: 20 }, // Name
+      { wch: 12 }, // Class
+      { wch: 10 }, // Fee
+      { wch: 15 }, // Submit Date
+      { wch: 20 }, // Total Amount Collected
+      { wch: 10 }, // Status
+    ];
 
-      return {
-        "Student Name": student.name,
-        Class: student.class,
-        "Monthly Fee": student.monthlyFee,
-        "Total Payments": studentPayments.length,
-        "Total Amount Paid": totalAmount,
-        "Last Payment Date": lastPayment
-          ? new Date(lastPayment.paidDate).toLocaleDateString("en-IN")
-          : "N/A",
-      };
-    });
-
-    const summarySheet = XLSX.utils.json_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
-
-    // Sheet 2: Payment Details
-    const paymentData = payments.map((payment) => {
-      const student = students.find((s) => s.id === payment.studentId);
-      return {
-        "Student Name": student?.name || "Unknown",
-        Class: student?.class || "N/A",
-        Month: new Date(payment.paidDate).toLocaleDateString("en-IN", {
-          year: "numeric",
-          month: "long",
-        }),
-        "Payment Date": new Date(payment.paidDate).toLocaleDateString("en-IN"),
-        Amount: payment.amount,
-      };
-    });
-
-    const paymentSheet = XLSX.utils.json_to_sheet(paymentData);
-    XLSX.utils.book_append_sheet(workbook, paymentSheet, "Payments");
-
-    // Sheet 3: Monthly Summary
-    const monthlyData: Record<string, any> = {};
-
-    students.forEach((student) => {
-      const studentPayments = payments.filter((p) => p.studentId === student.id);
-      const months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-
-      const row: Record<string, any> = {
-        "Student Name": student.name,
-        Class: student.class,
-      };
-
-      months.forEach((month, index) => {
-        const paid = studentPayments.some((p) => p.month === index);
-        row[month] = paid ? "Paid" : "Unpaid";
-      });
-
-      monthlyData[student.id] = row;
-    });
-
-    const monthlySummaryData = Object.values(monthlyData);
-    const monthlySheet = XLSX.utils.json_to_sheet(monthlySummaryData);
-    XLSX.utils.book_append_sheet(workbook, monthlySheet, "Monthly Status");
+    XLSX.utils.book_append_sheet(workbook, sheet, "Current Month");
 
     // Write file
     const fileName = `student_fees_${new Date().getTime()}.xlsx`;
@@ -106,7 +78,7 @@ export async function exportAsXLS(
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(filePath, {
         mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        dialogTitle: "Export Student Fee Data (XLS)",
+        dialogTitle: "Export Current Month Student Fee Data (XLS)",
       });
     }
 
@@ -118,13 +90,26 @@ export async function exportAsXLS(
 }
 
 /**
- * Export student payment data as PDF file
+ * Export current month student payment data as PDF file
+ * Columns: Name, Class, Fee, Submit Date, Total Amount Collected (from all students)
  */
 export async function exportAsPDF(
   students: Student[],
   payments: Payment[]
 ): Promise<string | null> {
   try {
+    const { month, year } = getCurrentMonthYear();
+    const monthName = new Date(year, month).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+
+    // Filter payments for current month only
+    const currentMonthPayments = payments.filter((p) => p.month === month && p.year === year);
+
+    // Calculate total amount collected from all students in current month
+    const totalAmountCollected = currentMonthPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    // Count paid students
+    const paidCount = currentMonthPayments.length;
+
     // Create PDF content as HTML
     let htmlContent = `
       <html>
@@ -139,81 +124,53 @@ export async function exportAsPDF(
             tr:nth-child(even) { background-color: #f5f5f5; }
             .summary { background-color: #f0f8ff; padding: 10px; border-radius: 5px; margin-bottom: 20px; }
             .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+            .paid { color: #22C55E; font-weight: bold; }
+            .pending { color: #F59E0B; font-weight: bold; }
           </style>
         </head>
         <body>
-          <h1>Student Fee Collection Report</h1>
+          <h1>Student Fee Collection Report - ${monthName}</h1>
           <p class="summary">
             <strong>Report Generated:</strong> ${new Date().toLocaleDateString("en-IN")}<br>
+            <strong>Month:</strong> ${monthName}<br>
             <strong>Total Students:</strong> ${students.length}<br>
-            <strong>Total Payments:</strong> ${payments.length}<br>
-            <strong>Total Amount Collected:</strong> ${CURRENCY_SYMBOL}${payments.reduce((sum, p) => sum + p.amount, 0)}
+            <strong>Fees Paid:</strong> ${paidCount}<br>
+            <strong>Total Amount Collected:</strong> RS${totalAmountCollected}
           </p>
 
-          <h2>Student Summary</h2>
+          <h2>Current Month Payment Status</h2>
           <table>
             <thead>
               <tr>
-                <th>Student Name</th>
+                <th>Name</th>
                 <th>Class</th>
-                <th>Monthly Fee</th>
-                <th>Total Payments</th>
-                <th>Total Amount Paid</th>
-                <th>Last Payment</th>
+                <th>Fee</th>
+                <th>Submit Date</th>
+                <th>Total Amount Collected</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
     `;
 
     students.forEach((student) => {
-      const studentPayments = payments.filter((p) => p.studentId === student.id);
-      const totalAmount = studentPayments.reduce((sum, p) => sum + p.amount, 0);
-      const lastPayment = studentPayments.sort(
-        (a, b) => new Date(b.paidDate).getTime() - new Date(a.paidDate).getTime()
-      )[0];
+      const studentPayment = currentMonthPayments.find((p) => p.studentId === student.id);
+      const submitDate = studentPayment
+        ? new Date(studentPayment.paidDate).toLocaleDateString("en-IN")
+        : "Not Paid";
+      const status = studentPayment ? '<span class="paid">Paid</span>' : '<span class="pending">Pending</span>';
 
       htmlContent += `
         <tr>
           <td>${student.name}</td>
           <td>${student.class}</td>
-          <td>${CURRENCY_SYMBOL}${student.monthlyFee}</td>
-          <td>${studentPayments.length}</td>
-          <td>${CURRENCY_SYMBOL}${totalAmount}</td>
-          <td>${lastPayment ? new Date(lastPayment.paidDate).toLocaleDateString("en-IN") : "N/A"}</td>
+          <td>RS${student.monthlyFee}</td>
+          <td>${submitDate}</td>
+          <td>RS${totalAmountCollected}</td>
+          <td>${status}</td>
         </tr>
       `;
     });
-
-    htmlContent += `
-            </tbody>
-          </table>
-
-          <h2>Payment Details</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Student Name</th>
-                <th>Class</th>
-                <th>Payment Date</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-    `;
-
-    payments
-      .sort((a, b) => new Date(b.paidDate).getTime() - new Date(a.paidDate).getTime())
-      .forEach((payment) => {
-        const student = students.find((s) => s.id === payment.studentId);
-        htmlContent += `
-        <tr>
-          <td>${student?.name || "Unknown"}</td>
-          <td>${student?.class || "N/A"}</td>
-          <td>${new Date(payment.paidDate).toLocaleDateString("en-IN")}</td>
-          <td>${CURRENCY_SYMBOL}${payment.amount}</td>
-        </tr>
-      `;
-      });
 
     htmlContent += `
             </tbody>
@@ -238,7 +195,7 @@ export async function exportAsPDF(
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(filePath, {
         mimeType: "text/html",
-        dialogTitle: "Export Student Fee Data (PDF/HTML)",
+        dialogTitle: "Export Current Month Student Fee Data (PDF/HTML)",
       });
     }
 
@@ -250,27 +207,32 @@ export async function exportAsPDF(
 }
 
 /**
- * Generate CSV export (already exists but adding for completeness)
+ * Export current month student payment data as CSV file
+ * Columns: Name, Class, Fee, Submit Date, Total Amount Collected (from all students)
  */
 export async function exportAsCSV(
   students: Student[],
   payments: Payment[]
 ): Promise<string | null> {
   try {
-    let csvContent = "Student Name,Class,Monthly Fee,Total Payments,Total Amount Paid,Last Payment Date\n";
+    const { month, year } = getCurrentMonthYear();
+
+    // Filter payments for current month only
+    const currentMonthPayments = payments.filter((p) => p.month === month && p.year === year);
+
+    // Calculate total amount collected from all students in current month
+    const totalAmountCollected = currentMonthPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    let csvContent = "Name,Class,Fee,Submit Date,Total Amount Collected,Status\n";
 
     for (const student of students) {
-      const studentPayments = payments.filter((p) => p.studentId === student.id);
-      const totalAmount = studentPayments.reduce((sum, p) => sum + p.amount, 0);
-      const lastPayment = studentPayments.sort(
-        (a, b) => new Date(b.paidDate).getTime() - new Date(a.paidDate).getTime()
-      )[0];
+      const studentPayment = currentMonthPayments.find((p) => p.studentId === student.id);
+      const submitDate = studentPayment
+        ? new Date(studentPayment.paidDate).toLocaleDateString("en-IN")
+        : "Not Paid";
+      const status = studentPayment ? "Paid" : "Pending";
 
-      const lastPaymentDate = lastPayment
-        ? new Date(lastPayment.paidDate).toLocaleDateString("en-IN")
-        : "N/A";
-
-      csvContent += `"${student.name}","${student.class}",${student.monthlyFee},${studentPayments.length},${totalAmount},"${lastPaymentDate}"\n`;
+      csvContent += `"${student.name}","${student.class}",${student.monthlyFee},"${submitDate}",${totalAmountCollected},"${status}"\n`;
     }
 
     const fileName = `student_fees_${new Date().getTime()}.csv`;
@@ -282,7 +244,7 @@ export async function exportAsCSV(
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(filePath, {
         mimeType: "text/csv",
-        dialogTitle: "Export Student Fee Data (CSV)",
+        dialogTitle: "Export Current Month Student Fee Data (CSV)",
       });
     }
 
