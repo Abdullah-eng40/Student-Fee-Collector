@@ -191,6 +191,22 @@ export default function SettingsScreen() {
               <MaterialIcons name="upload-file" size={20} color="#ffffff" />
               <Text className="text-white font-semibold ml-3">Bulk Import Students</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("../class-analytics")}
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="bar-chart" size={20} color="#ffffff" />
+              <Text className="text-white font-semibold ml-3">Class Analytics</Text>
+            </TouchableOpacity>
           </View>
         </View>
 

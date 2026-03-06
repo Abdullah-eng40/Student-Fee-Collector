@@ -126,3 +126,14 @@
 - [x] Fix PDF export to show only current month data
 - [x] Update export columns to: Name, Class, Fee, Submit Date, Total Amount
 - [x] Test export functionality with current month data
+
+## Class-wise Analytics View
+
+- [x] Create analytics utility to calculate class statistics
+- [x] Create class analytics screen component
+- [x] Add collection rate chart by class
+- [x] Add outstanding amount chart by class
+- [x] Add class-wise student count display
+- [x] Add total fees vs collected comparison
+- [x] Create class selection/filter functionality
+- [x] Test analytics calculations and visualizations
