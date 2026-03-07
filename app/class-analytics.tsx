@@ -6,6 +6,9 @@ import { calculateClassAnalytics, ClassAnalytics } from "@/lib/analytics-service
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import { useRouter } from "expo-router";
+import { CollectionRateChart } from "@/components/charts/collection-rate-chart";
+import { OutstandingAmountChart } from "@/components/charts/outstanding-amount-chart";
+import { CollectionComparisonChart } from "@/components/charts/collection-comparison-chart";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -250,6 +253,16 @@ export default function ClassAnalyticsScreen() {
                 </View>
               </View>
             </View>
+          </View>
+        )}
+
+        {/* Charts Section */}
+        {analyticsData.classes.length > 0 && (
+          <View className="mb-6">
+            <Text className="text-lg font-semibold text-foreground mb-4">Visualizations</Text>
+            <CollectionRateChart data={analyticsData.classes} />
+            <CollectionComparisonChart data={analyticsData.classes} />
+            <OutstandingAmountChart data={analyticsData.classes} />
           </View>
         )}
 
