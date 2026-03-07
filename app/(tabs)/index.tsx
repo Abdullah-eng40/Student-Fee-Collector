@@ -91,7 +91,7 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer className="p-4">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
+      <ScrollView contentContainerStyle={ flexGrow: 1 }
         {/* Header */}
         <View className="mb-6">
           <Text className="text-3xl font-bold text-foreground">Students</Text>
