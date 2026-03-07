@@ -67,7 +67,7 @@ export default function DashboardScreen() {
 
   return (
     <ScreenContainer className="p-4">
-      <ScrollView contentContainerStyle={ flexGrow: 1 }>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {/* Header */}
         <View className="mb-6 flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
