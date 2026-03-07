@@ -56,41 +56,41 @@ describe("Export Service", () => {
     },
   ];
 
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
   const mockPayments: Payment[] = [
     {
       id: "p1",
       studentId: "1",
-      month: currentMonth,
-      year: currentYear,
-      amount: 5000,
-      paidDate: new Date().toISOString(),
-    },
-    {
-      id: "p2",
-      studentId: "2",
-      month: currentMonth,
-      year: currentYear,
+      month: 0,
+      year: 2026,
       amount: 5000,
       paidDate: new Date().toISOString(),
     },
   ];
 
   describe("exportAsCSV", () => {
-    it("should export students and payments as CSV", async () => {
+    it("should export with the correct 5 columns", async () => {
       vi.mocked(FileSystem.writeAsStringAsync).mockResolvedValueOnce(undefined);
 
       await exportAsCSV(mockStudents, mockPayments);
 
       expect(FileSystem.writeAsStringAsync).toHaveBeenCalled();
       const call = vi.mocked(FileSystem.writeAsStringAsync).mock.calls[0];
+      const content = call[1] as string;
       expect(call[0]).toContain("student_fees_");
-      expect(call[1]).toContain("Name,Class,Fee,Submit Date,Total Amount Collected");
-      expect(call[1]).toContain("John Doe");
-      expect(call[1]).toContain("Jane Smith");
+      expect(content).toContain("Name,Class,Payment Date,Fee's,Total Amount of Fee's");
+      expect(content).toContain("John Doe");
+      expect(content).toContain("Jane Smith");
+    });
+
+    it("should show Pending for students without payments", async () => {
+      vi.mocked(FileSystem.writeAsStringAsync).mockResolvedValueOnce(undefined);
+
+      await exportAsCSV(mockStudents, mockPayments);
+
+      const call = vi.mocked(FileSystem.writeAsStringAsync).mock.calls[0];
+      const content = call[1] as string;
+      // Jane Smith (id: "2") has no payments so should show Pending
+      expect(content).toContain("Pending");
     });
 
     it("should handle export errors gracefully", async () => {
@@ -105,7 +105,7 @@ describe("Export Service", () => {
   });
 
   describe("exportAsXLS", () => {
-    it("should export students and payments as XLS", async () => {
+    it("should export students as XLS with correct file extension", async () => {
       vi.mocked(FileSystem.writeAsStringAsync).mockResolvedValueOnce(undefined);
 
       await exportAsXLS(mockStudents, mockPayments);
@@ -128,29 +128,32 @@ describe("Export Service", () => {
   });
 
   describe("exportAsPDF", () => {
-    it("should export students and payments as PDF", async () => {
+    it("should export with the correct 5-column table", async () => {
       vi.mocked(FileSystem.writeAsStringAsync).mockResolvedValueOnce(undefined);
 
       await exportAsPDF(mockStudents, mockPayments);
 
       expect(FileSystem.writeAsStringAsync).toHaveBeenCalled();
       const call = vi.mocked(FileSystem.writeAsStringAsync).mock.calls[0];
+      const content = call[1] as string;
       expect(call[0]).toContain("student_fees_");
-      expect(call[1]).toContain("Student Fee Collection Report");
-      expect(call[1]).toContain("John Doe");
-      expect(call[1]).toContain("Jane Smith");
+      expect(content).toContain("Student Fee Collection Report");
+      expect(content).toContain("Name");
+      expect(content).toContain("Payment Date");
+      expect(content).toContain("Fee's");
+      expect(content).toContain("Total Amount of Fee's");
+      expect(content).toContain("John Doe");
+      expect(content).toContain("Jane Smith");
     });
 
-    it("should include current month payment details in PDF", async () => {
+    it("should show Pending for students without payments", async () => {
       vi.mocked(FileSystem.writeAsStringAsync).mockResolvedValueOnce(undefined);
 
       await exportAsPDF(mockStudents, mockPayments);
 
       const call = vi.mocked(FileSystem.writeAsStringAsync).mock.calls[0];
       const content = call[1] as string;
-      expect(content).toContain("Current Month Payment Status");
-      expect(content).toContain("Total Students");
-      expect(content).toContain("Fees Paid");
+      expect(content).toContain("Pending");
     });
 
     it("should handle export errors gracefully", async () => {
