@@ -118,7 +118,7 @@ export default function DashboardScreen() {
 
         {/* Monthly Trends */}
         <View className="bg-surface rounded-lg p-4 mb-6 border border-border">
-          <Text className="text-sm font-semibold text-foreground mb-4">6-Month Trend</Text>
+          <Text className="text-sm font-semibold text-foreground mb-4">3 Month Trend</Text>
           {monthlyTrends.map((trend, idx) => (
             <View key={idx} className="mb-4">
               <View className="flex-row justify-between mb-1">
