@@ -160,3 +160,17 @@
 - [x] Test PDF receipt generation
 - [x] Test updated History tab display
 - [x] Test updated Summary tab display
+
+## Recurring Payment Reminders Feature
+
+- [x] Create recurring reminder configuration utility
+- [x] Add reminder schedule storage (date, frequency, enabled status)
+- [x] Create reminder settings screen component
+- [x] Implement date picker for reminder trigger date
+- [x] Add frequency selection (weekly, bi-weekly, monthly)
+- [x] Create background task scheduler for reminders
+- [x] Implement reminder notification trigger logic
+- [x] Add enable/disable toggle for reminders
+- [x] Create reminder history tracking
+- [x] Test recurring reminder scheduling
+- [x] Test reminder notifications at scheduled times
