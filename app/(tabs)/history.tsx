@@ -42,6 +42,21 @@ export default function HistoryScreen() {
     });
   };
 
+  const getCurrentMonthMetrics = () => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const currentMonthPayments = sortedPayments.filter(
+      (p) => p.month === currentMonth && p.year === currentYear
+    );
+
+    return {
+      count: currentMonthPayments.length,
+      amount: currentMonthPayments.reduce((sum, p) => sum + p.amount, 0),
+    };
+  };
+
   const renderPaymentItem = ({ item }: { item: Payment & { studentName: string } }) => (
     <View className="bg-surface rounded-lg p-4 mb-3 border border-border">
       <View className="flex-row items-center justify-between mb-2">
@@ -68,16 +83,30 @@ export default function HistoryScreen() {
 
         {/* Stats */}
         {sortedPayments.length > 0 && (
-          <View className="bg-surface rounded-lg p-4 mb-6 border border-border flex-row justify-around">
-            <View className="items-center">
-              <Text className="text-2xl font-bold text-primary">{sortedPayments.length}</Text>
-              <Text className="text-xs text-muted mt-1">Total Payments</Text>
+          <View className="bg-surface rounded-lg p-4 mb-6 border border-border">
+            <View className="flex-row justify-around mb-4">
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-primary">{sortedPayments.length}</Text>
+                <Text className="text-xs text-muted mt-1">Total Payments</Text>
+              </View>
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-success">
+                  RS{sortedPayments.reduce((sum, p) => sum + p.amount, 0)}
+                </Text>
+                <Text className="text-xs text-muted mt-1">Total Amount</Text>
+              </View>
             </View>
-            <View className="items-center">
-              <Text className="text-2xl font-bold text-success">
-                RS{sortedPayments.reduce((sum, p) => sum + p.amount, 0)}
-              </Text>
-              <Text className="text-xs text-muted mt-1">Total Amount</Text>
+            <View className="border-t border-border pt-4 flex-row justify-around">
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-primary">{getCurrentMonthMetrics().count}</Text>
+                <Text className="text-xs text-muted mt-1">Current Month</Text>
+              </View>
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-success">
+                  RS{getCurrentMonthMetrics().amount}
+                </Text>
+                <Text className="text-xs text-muted mt-1">Current Month Amount</Text>
+              </View>
             </View>
           </View>
         )}

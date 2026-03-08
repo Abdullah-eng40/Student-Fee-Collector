@@ -23,9 +23,11 @@ export default function SettingsScreen() {
   const currentYear = currentDate.getFullYear();
   const currentMonthPayments = payments.filter(
     (p) => p.month === currentMonth && p.year === currentYear
-  ).length;
-
-  const unpaidCount = students.length - currentMonthPayments;
+  );
+  
+  const currentMonthCount = currentMonthPayments.length;
+  const currentMonthAmount = currentMonthPayments.reduce((sum, p) => sum + p.amount, 0);
+  const unpaidCount = students.length - currentMonthCount;
 
   const handleExportCSV = async () => {
     try {
@@ -124,9 +126,9 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {/* Header */}
         <View className="mb-6 flex-row items-center">
-          <MaterialIcons name="settings" size={28} color={colors.primary} style={{ marginRight: 8 }} />
+          <MaterialIcons name="summary" size={28} color={colors.primary} style={{ marginRight: 8 }} />
           <View className="flex-1">
-            <Text className="text-3xl font-bold text-foreground">Settings</Text>
+            <Text className="text-3xl font-bold text-foreground">Summary</Text>
             <Text className="text-sm text-muted mt-1">App configuration and data management</Text>
           </View>
         </View>
@@ -136,10 +138,6 @@ export default function SettingsScreen() {
           <Text className="text-sm font-semibold text-foreground mb-4">Data Summary</Text>
           <View className="flex-row justify-between mb-3">
             <View className="flex-1">
-              <Text className="text-xs text-muted mb-1">Current Month</Text>
-              <Text className="text-lg font-bold text-foreground">{currentMonthPayments}</Text>
-            </View>
-            <View className="flex-1">
               <Text className="text-xs text-muted mb-1">Total Students</Text>
               <Text className="text-lg font-bold text-foreground">{students.length}</Text>
             </View>
@@ -147,11 +145,21 @@ export default function SettingsScreen() {
               <Text className="text-xs text-muted mb-1">Total Payments</Text>
               <Text className="text-lg font-bold text-foreground">{payments.length}</Text>
             </View>
+            <View className="flex-1">
+              <Text className="text-xs text-muted mb-1">Unpaid This Month</Text>
+              <Text className="text-lg font-bold text-error">{unpaidCount}</Text>
+            </View>
           </View>
-          <View className="flex-row justify-between pt-3 border-t border-border">
+          <View className="flex-row justify-between pt-3 border-t border-border mb-3">
             <Text className="text-sm text-muted">Total Amount Collected</Text>
             <Text className="text-sm font-semibold text-success">
-              {CURRENCY_SYMBOL}{payments.reduce((sum, p) => sum + p.amount, 0)}
+              RS{payments.reduce((sum, p) => sum + p.amount, 0)}
+            </Text>
+          </View>
+          <View className="flex-row justify-between pt-3 border-t border-border">
+            <Text className="text-sm text-muted">Current Month Amount</Text>
+            <Text className="text-sm font-semibold text-success">
+              RS{currentMonthAmount}
             </Text>
           </View>
         </View>
@@ -310,7 +318,7 @@ export default function SettingsScreen() {
             >
               <MaterialIcons name="description" size={20} color="#ffffff" />
               <Text className="text-white font-semibold ml-3">
-                {exporting ? "Exporting..." : "Export as XLS"}
+                {exporting ? "Exporting..." : "Export as Excel"}
               </Text>
             </TouchableOpacity>
 
@@ -334,14 +342,6 @@ export default function SettingsScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-
-          {students.length === 0 && (
-            <View className="bg-warning/10 rounded-lg p-3 border border-warning/20 mt-3">
-              <Text className="text-xs text-warning">
-                Add students first to enable export functionality
-              </Text>
-            </View>
-          )}
         </View>
 
         {/* Danger Zone */}
@@ -359,18 +359,9 @@ export default function SettingsScreen() {
             }}
             activeOpacity={0.8}
           >
-            <MaterialIcons name="delete-sweep" size={20} color="#ffffff" />
+            <MaterialIcons name="delete-forever" size={20} color="#ffffff" />
             <Text className="text-white font-semibold ml-3">Clear All Data</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* About Section */}
-        <View className="bg-surface rounded-lg p-4 border border-border mt-auto">
-          <Text className="text-sm font-semibold text-foreground mb-2">About</Text>
-          <Text className="text-xs text-muted">Student Fee Collector v1.0.0</Text>
-          <Text className="text-xs text-muted mt-2">
-            A simple app to manage student fee collection and track monthly payments.
-          </Text>
         </View>
       </ScrollView>
     </ScreenContainer>

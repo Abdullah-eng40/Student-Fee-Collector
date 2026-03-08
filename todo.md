@@ -147,3 +147,16 @@
 - [x] Add chart to class analytics screen
 - [x] Make charts interactive with tap/touch feedback
 - [x] Test charts with various data scenarios
+
+## PDF Receipt Generation & UI Updates
+
+- [x] Create PDF receipt generation utility
+- [x] Add download receipt button to payment history
+- [x] Generate receipt with student details and payment info
+- [x] Add current month payment count to History tab
+- [x] Add current month amount to History tab
+- [x] Add current month amount to Settings/Summary tab
+- [x] Rename Settings tab to Summary
+- [x] Test PDF receipt generation
+- [x] Test updated History tab display
+- [x] Test updated Summary tab display
