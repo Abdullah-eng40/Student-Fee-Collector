@@ -37,7 +37,6 @@ export default function BulkImportScreen() {
       setImportResult(validation);
     } catch (error) {
       Alert.alert("Error", "Failed to read XLS file. Please ensure it has columns: Student Name, Class, Monthly Fee");
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -75,7 +74,6 @@ export default function BulkImportScreen() {
       );
     } catch (error) {
       Alert.alert("Error", "Failed to import students");
-      console.error(error);
     } finally {
       setLoading(false);
     }

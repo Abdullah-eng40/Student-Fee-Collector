@@ -36,7 +36,6 @@ export default function SettingsScreen() {
       Alert.alert("Success", "CSV file exported successfully");
     } catch (error) {
       Alert.alert("Error", "Failed to export CSV file");
-      console.error(error);
     } finally {
       setExporting(false);
     }
@@ -49,7 +48,6 @@ export default function SettingsScreen() {
       Alert.alert("Success", "Excel file exported successfully");
     } catch (error) {
       Alert.alert("Error", "Failed to export Excel file");
-      console.error(error);
     } finally {
       setExporting(false);
     }
@@ -62,7 +60,6 @@ export default function SettingsScreen() {
       Alert.alert("Success", "PDF file exported successfully");
     } catch (error) {
       Alert.alert("Error", "Failed to export PDF file");
-      console.error(error);
     } finally {
       setExporting(false);
     }
@@ -88,7 +85,6 @@ export default function SettingsScreen() {
               Alert.alert("Success", `Notifications sent to ${sent} student(s)`);
             } catch (error) {
               Alert.alert("Error", "Failed to send notifications");
-              console.error(error);
             } finally {
               setSendingNotifications(false);
             }

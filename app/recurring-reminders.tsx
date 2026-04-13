@@ -29,7 +29,6 @@ export default function RecurringRemindersScreen() {
       const data = await getReminders();
       setReminders(data);
     } catch (error) {
-      console.error("Error loading reminders:", error);
       Alert.alert("Error", "Failed to load reminders");
     } finally {
       setLoading(false);

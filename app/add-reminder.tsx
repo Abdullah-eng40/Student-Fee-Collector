@@ -83,7 +83,6 @@ export default function AddReminderScreen() {
       router.back();
     } catch (error) {
       Alert.alert("Error", "Failed to save reminder");
-      console.error(error);
     } finally {
       setLoading(false);
     }

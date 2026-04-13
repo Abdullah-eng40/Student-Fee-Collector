@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { Student, Payment, StudentWithPayments } from "./types";
 import * as storage from "./storage";
 
@@ -37,7 +37,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
     refreshData();
   }, []);
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -49,9 +49,9 @@ export function StudentProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addStudent = async (studentData: Omit<Student, "id" | "createdAt">) => {
+  const addStudent = useCallback(async (studentData: Omit<Student, "id" | "createdAt">) => {
     try {
       const newStudent: Student = {
         ...studentData,
@@ -64,9 +64,9 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       setError(err instanceof Error ? err.message : "Failed to add student");
       throw err;
     }
-  };
+  }, []);
 
-  const updateStudent = async (student: Student) => {
+  const updateStudent = useCallback(async (student: Student) => {
     try {
       await storage.updateStudent(student);
       setStudents((prev) => prev.map((s) => (s.id === student.id ? student : s)));
@@ -74,9 +74,9 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       setError(err instanceof Error ? err.message : "Failed to update student");
       throw err;
     }
-  };
+  }, []);
 
-  const deleteStudent = async (studentId: string) => {
+  const deleteStudent = useCallback(async (studentId: string) => {
     try {
       await storage.deleteStudent(studentId);
       setStudents((prev) => prev.filter((s) => s.id !== studentId));
@@ -85,18 +85,18 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       setError(err instanceof Error ? err.message : "Failed to delete student");
       throw err;
     }
-  };
+  }, []);
 
-  const getStudentWithPayments = async (studentId: string) => {
+  const getStudentWithPayments = useCallback(async (studentId: string) => {
     try {
       return await storage.getStudentWithPayments(studentId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to get student");
       return null;
     }
-  };
+  }, []);
 
-  const addPayment = async (studentId: string, month: number, year: number) => {
+  const addPayment = useCallback(async (studentId: string, month: number, year: number) => {
     try {
       const student = students.find((s) => s.id === studentId);
       if (!student) throw new Error("Student not found");
@@ -115,9 +115,9 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       setError(err instanceof Error ? err.message : "Failed to add payment");
       throw err;
     }
-  };
+  }, [students]);
 
-  const deletePayment = async (paymentId: string) => {
+  const deletePayment = useCallback(async (paymentId: string) => {
     try {
       await storage.deletePayment(paymentId);
       setPayments((prev) => prev.filter((p) => p.id !== paymentId));
@@ -125,25 +125,25 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       setError(err instanceof Error ? err.message : "Failed to delete payment");
       throw err;
     }
-  };
+  }, []);
 
-  const getPaymentForMonth = async (studentId: string, month: number, year: number) => {
+  const getPaymentForMonth = useCallback(async (studentId: string, month: number, year: number) => {
     try {
       return await storage.getPaymentForMonth(studentId, month, year);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to get payment");
       return undefined;
     }
-  };
+  }, []);
 
-  const getStudentPayments = async (studentId: string) => {
+  const getStudentPayments = useCallback(async (studentId: string) => {
     try {
       return await storage.getStudentPayments(studentId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to get payments");
       return [];
     }
-  };
+  }, []);
 
   const value: StudentContextType = {
     students,
