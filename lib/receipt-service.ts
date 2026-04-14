@@ -16,7 +16,7 @@ export interface ReceiptData {
  */
 export async function generatePaymentReceipt(data: ReceiptData): Promise<string> {
   try {
-    const pdfDoc = PDFDocument.create();
+    const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([600, 800]);
     const { height } = page.getSize();
 

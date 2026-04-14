@@ -110,7 +110,7 @@ export default function RecurringRemindersScreen() {
 
         <View className="flex-row gap-2">
           <TouchableOpacity
-            onPress={() => router.push(`/edit-reminder/${item.id}`)}
+            onPress={() => router.push(`/add-reminder?id=${item.id}`)}
             style={{
               flex: 1,
               backgroundColor: colors.primary,

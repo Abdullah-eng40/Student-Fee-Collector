@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Student, Payment, StudentWithPayments } from "./types";
-import * as storage from "./storage";
+import * as storage from "./storage-safe";
+import { SupabaseSyncService } from "./supabase-sync-service";
+import { updateSyncStatus } from "./sync-status-service";
 
 interface StudentContextType {
   students: Student[];
@@ -32,26 +34,43 @@ export function StudentProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load data on mount
+  // Load data on mount with initialization
   useEffect(() => {
-    refreshData();
+    const initAndLoad = async () => {
+      try {
+        await storage.initializeStorage();
+        await refreshData();
+      } catch (err) {
+        console.error("Failed to initialize storage:", err);
+        setError("Failed to initialize app storage");
+      }
+    };
+    initAndLoad();
   }, []);
 
-  const refreshData = useCallback(async () => {
+  const refreshData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [studentsData, paymentsData] = await Promise.all([storage.getStudents(), storage.getPayments()]);
-      setStudents(studentsData);
-      setPayments(paymentsData);
+      const [studentsData, paymentsData] = await Promise.all([
+        storage.getStudents(),
+        storage.getPayments(),
+      ]);
+      setStudents(studentsData || []);
+      setPayments(paymentsData || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errorMsg = err instanceof Error ? err.message : "An error occurred while loading data";
+      console.error("Refresh data error:", errorMsg);
+      setError(errorMsg);
+      // Set empty data to allow app to continue
+      setStudents([]);
+      setPayments([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }
 
-  const addStudent = useCallback(async (studentData: Omit<Student, "id" | "createdAt">) => {
+  const addStudent = async (studentData: Omit<Student, "id" | "createdAt">) => {
     try {
       const newStudent: Student = {
         ...studentData,
@@ -60,43 +79,64 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       };
       await storage.saveStudent(newStudent);
       setStudents((prev) => [...prev, newStudent]);
+      // Auto-sync to cloud
+      try {
+        await SupabaseSyncService.syncStudentsToCloud([newStudent]);
+        await updateSyncStatus("full");
+      } catch (syncErr) {
+        console.error("Auto-sync failed for new student:", syncErr);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add student");
       throw err;
     }
-  }, []);
+  };
 
-  const updateStudent = useCallback(async (student: Student) => {
+  const updateStudent = async (student: Student) => {
     try {
       await storage.updateStudent(student);
       setStudents((prev) => prev.map((s) => (s.id === student.id ? student : s)));
+      // Auto-sync to cloud
+      try {
+        await SupabaseSyncService.syncStudentsToCloud([student]);
+        await updateSyncStatus("full");
+      } catch (syncErr) {
+        console.error("Auto-sync failed for updated student:", syncErr);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update student");
       throw err;
     }
-  }, []);
+  };
 
-  const deleteStudent = useCallback(async (studentId: string) => {
+  const deleteStudent = async (studentId: string) => {
     try {
       await storage.deleteStudent(studentId);
       setStudents((prev) => prev.filter((s) => s.id !== studentId));
       setPayments((prev) => prev.filter((p) => p.studentId !== studentId));
+      // Auto-sync delete to cloud
+      try {
+        await SupabaseSyncService.deleteStudentFromCloud(studentId);
+        await updateSyncStatus("full");
+      } catch (syncErr) {
+        console.error("Auto-sync failed for deleted student:", syncErr);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete student");
       throw err;
     }
-  }, []);
+  };
 
-  const getStudentWithPayments = useCallback(async (studentId: string) => {
+  const getStudentWithPayments = async (studentId: string) => {
     try {
       return await storage.getStudentWithPayments(studentId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to get student");
       return null;
     }
-  }, []);
+  };
 
-  const addPayment = useCallback(async (studentId: string, month: number, year: number) => {
+  const addPayment = async (studentId: string, month: number, year: number) => {
     try {
       const student = students.find((s) => s.id === studentId);
       if (!student) throw new Error("Student not found");
@@ -111,39 +151,53 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       };
       await storage.savePayment(newPayment);
       setPayments((prev) => [...prev, newPayment]);
+      // Auto-sync to cloud
+      try {
+        await SupabaseSyncService.syncPaymentsToCloud([newPayment]);
+        await updateSyncStatus("full");
+      } catch (syncErr) {
+        console.error("Auto-sync failed for new payment:", syncErr);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add payment");
       throw err;
     }
-  }, [students]);
+  };
 
-  const deletePayment = useCallback(async (paymentId: string) => {
+  const deletePayment = async (paymentId: string) => {
     try {
       await storage.deletePayment(paymentId);
       setPayments((prev) => prev.filter((p) => p.id !== paymentId));
+      // Auto-sync delete to cloud
+      try {
+        await SupabaseSyncService.deletePaymentFromCloud(paymentId);
+        await updateSyncStatus("full");
+      } catch (syncErr) {
+        console.error("Auto-sync failed for deleted payment:", syncErr);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete payment");
       throw err;
     }
-  }, []);
+  };
 
-  const getPaymentForMonth = useCallback(async (studentId: string, month: number, year: number) => {
+  const getPaymentForMonth = async (studentId: string, month: number, year: number) => {
     try {
       return await storage.getPaymentForMonth(studentId, month, year);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to get payment");
       return undefined;
     }
-  }, []);
+  };
 
-  const getStudentPayments = useCallback(async (studentId: string) => {
+  const getStudentPayments = async (studentId: string) => {
     try {
       return await storage.getStudentPayments(studentId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to get payments");
       return [];
     }
-  }, []);
+  };
 
   const value: StudentContextType = {
     students,

@@ -98,6 +98,17 @@ export const createReminder = async (reminder: Omit<ReminderConfig, 'id' | 'crea
   }
 };
 
+// Get reminder by ID
+export const getReminderById = async (id: string): Promise<ReminderConfig | null> => {
+  try {
+    const reminders = await getReminders();
+    return reminders.find((r) => r.id === id) || null;
+  } catch (error) {
+    console.error('Error getting reminder by ID:', error);
+    return null;
+  }
+};
+
 // Get all reminders
 export const getReminders = async (): Promise<ReminderConfig[]> => {
   try {

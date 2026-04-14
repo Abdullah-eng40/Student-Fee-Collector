@@ -2,10 +2,14 @@ import { ScrollView, Text, View, TouchableOpacity, FlatList, Alert, TextInput } 
 import { ScreenContainer } from "@/components/screen-container";
 import { useStudents } from "@/lib/student-context";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, memo, useCallback } from "react";
 import { Payment, CURRENCY_SYMBOL } from "@/lib/types";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
+import { getPaymentStatus, getDueDateMessage } from "@/lib/due-date-service";
+import { getMonthlyDueStatusMessage, getMonthlyDueStatusColor } from "@/lib/monthly-due-date-service";
+
+import { SplashLoader } from "@/components/splash-loader";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -19,8 +23,8 @@ export default function HomeScreen() {
     refreshData();
   }, []);
 
-  // Check if students have paid this month
-  useEffect(() => {
+  // Memoized payment status calculation
+  const studentPaymentStatusMemo = useMemo(() => {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
@@ -32,33 +36,76 @@ export default function HomeScreen() {
       );
       status[student.id] = paid;
     });
-    setStudentPaymentStatus(status);
+    return status;
   }, [students, payments]);
 
-  // Filter students based on search query
   useEffect(() => {
+    setStudentPaymentStatus(studentPaymentStatusMemo);
+  }, [studentPaymentStatusMemo]);
+
+  // Memoized filtered students to avoid unnecessary recalculations
+  const filteredStudentsMemo = useMemo(() => {
     if (searchQuery.trim() === "") {
-      setFilteredStudents(students);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = students.filter(
-        (student) =>
-          student.name.toLowerCase().includes(query) || student.class.toLowerCase().includes(query)
-      );
-      setFilteredStudents(filtered);
+      return students;
     }
+    const query = searchQuery.toLowerCase();
+    return students.filter(
+      (student) =>
+        student.name.toLowerCase().includes(query) || student.class.toLowerCase().includes(query)
+    );
   }, [searchQuery, students]);
 
-  const handleAddStudent = () => {
+  useEffect(() => {
+    setFilteredStudents(filteredStudentsMemo);
+  }, [filteredStudentsMemo]);
+
+  const handleAddStudent = useCallback(() => {
     router.push("/add-student");
-  };
+  }, [router]);
 
-  const handleStudentPress = (studentId: string) => {
+  const handleStudentPress = useCallback((studentId: string) => {
     router.push(`/student-detail/${studentId}`);
-  };
+  }, [router]);
 
-  const renderStudentItem = ({ item }: { item: (typeof students)[0] }) => {
-    const isPaid = studentPaymentStatus[item.id];
+  // Memoized StudentItem component to prevent unnecessary re-renders
+  const StudentItem = memo(({ item }: { item: (typeof students)[0] }) => {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const currentMonthPayment = payments.find(
+      (p) => p.studentId === item.id && p.month === currentMonth && p.year === currentYear
+    );
+    
+    let statusMessage = getDueDateMessage(item, payments);
+    let statusColor = colors.warning;
+    let statusIcon = "schedule";
+    let statusLabel = "Pending";
+    
+    if (item.monthlyDueDate) {
+      statusMessage = getMonthlyDueStatusMessage(item.monthlyDueDate, currentMonth, currentYear, currentMonthPayment?.paidDate);
+      statusColor = getMonthlyDueStatusColor(item.monthlyDueDate, currentMonth, currentYear, currentMonthPayment?.paidDate);
+      
+      if (currentMonthPayment?.paidDate) {
+        statusIcon = "check-circle";
+        statusLabel = "Paid";
+      } else if (statusColor === colors.error) {
+        statusIcon = "error";
+        statusLabel = "Due";
+      } else {
+        statusIcon = "schedule";
+        statusLabel = "Pending";
+      }
+    } else {
+      const status = getPaymentStatus(item, payments);
+      if (status === "paid") {
+        statusColor = colors.success;
+        statusIcon = "check-circle";
+        statusLabel = "Paid";
+      } else if (status === "overdue") {
+        statusColor = colors.error;
+        statusIcon = "error";
+        statusLabel = "Due";
+      }
+    }
     return (
       <TouchableOpacity
         onPress={() => handleStudentPress(item.id)}
@@ -71,23 +118,32 @@ export default function HomeScreen() {
             <Text className="text-sm text-muted mt-1">
               Class: {item.class} | Fee: {CURRENCY_SYMBOL}{item.monthlyFee}
             </Text>
+            <Text className="text-xs mt-2" style={{ color: statusColor }}>
+              {statusMessage}
+            </Text>
           </View>
           <View className="items-center ml-4">
-            {isPaid ? (
-              <View className="bg-success rounded-full p-2">
-                <MaterialIcons name="check" size={20} color="#ffffff" />
-              </View>
-            ) : (
-              <View className="bg-warning rounded-full p-2">
-                <MaterialIcons name="schedule" size={20} color="#ffffff" />
-              </View>
-            )}
-            <Text className="text-xs text-muted mt-1">{isPaid ? "Paid" : "Pending"}</Text>
+            <View className="rounded-full p-2" style={{ backgroundColor: statusColor }}>
+              <MaterialIcons name={statusIcon as any} size={20} color="#ffffff" />
+            </View>
+            <Text className="text-xs text-muted mt-1 text-center" style={{ maxWidth: 50 }}>
+              {statusLabel}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
     );
-  };
+  });
+
+  StudentItem.displayName = 'StudentItem';
+
+  const renderStudentItem = useCallback(({ item }: { item: (typeof students)[0] }) => (
+    <StudentItem item={item} />
+  ), [StudentItem]);
+
+  if (loading) {
+    return <SplashLoader />;
+  }
 
   return (
     <ScreenContainer className="p-4">
@@ -97,6 +153,17 @@ export default function HomeScreen() {
           <Text className="text-3xl font-bold text-foreground">Students</Text>
           <Text className="text-sm text-muted mt-1">Manage student fee collection</Text>
         </View>
+
+        {/* Error State */}
+        {error && (
+          <View className="bg-error rounded-lg p-4 mb-4 border border-error">
+            <Text className="text-sm text-white font-semibold">Error: {error}</Text>
+            <TouchableOpacity onPress={refreshData} style={{ marginTop: 8 }}>
+              <Text className="text-sm text-white underline">Retry</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
 
         {/* Search Bar */}
         <View className="mb-4 flex-row items-center bg-surface rounded-lg border border-border px-3 py-2">
@@ -168,23 +235,25 @@ export default function HomeScreen() {
         )}
 
         {/* Add Student Button */}
-        <TouchableOpacity
-          onPress={handleAddStudent}
-          style={{
-            backgroundColor: colors.primary,
-            borderRadius: 12,
-            paddingVertical: 14,
-            paddingHorizontal: 24,
-            marginTop: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          activeOpacity={0.8}
-        >
-          <MaterialIcons name="add" size={24} color="#ffffff" />
-          <Text className="text-white font-semibold ml-2">Add Student</Text>
-        </TouchableOpacity>
+        {!loading && (
+          <TouchableOpacity
+            onPress={handleAddStudent}
+            style={{
+              backgroundColor: colors.primary,
+              borderRadius: 8,
+              paddingVertical: 16,
+              paddingHorizontal: 20,
+              marginTop: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name="add" size={24} color="#ffffff" />
+            <Text className="text-white font-semibold ml-2">Add Student</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </ScreenContainer>
   );

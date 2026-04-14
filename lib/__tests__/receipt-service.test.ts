@@ -8,8 +8,10 @@ describe('Receipt Service', () => {
       expect(receiptNumber).toMatch(/^RCP-\d{8}$/);
     });
 
-    it('should generate unique receipt numbers', () => {
+    it('should generate unique receipt numbers', async () => {
       const receipt1 = generateReceiptNumber();
+      // Add a small delay to ensure different timestamps
+      await new Promise(resolve => setTimeout(resolve, 10));
       const receipt2 = generateReceiptNumber();
       expect(receipt1).not.toBe(receipt2);
     });
