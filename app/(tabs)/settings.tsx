@@ -9,8 +9,7 @@ import { AutomaticImportService } from "@/lib/automatic-import-service";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useColors } from "@/hooks/use-colors";
 import * as storage from "@/lib/storage";
-import { exportAsXLS, exportAsPDF, exportAsCSV } from "@/lib/export-service";
-import { exportCurrentMonthAsXLS, exportCurrentMonthAsPDF, exportCurrentMonthAsCSV } from "@/lib/current-month-export-service";
+
 import { exportAsCSV as exportAsCSVFlex, exportAsXLS as exportAsXLSFlex, exportAsPDF as exportAsPDFFlex } from "@/lib/flexible-export-service";
 import { SupabaseConfigModal } from "@/components/supabase-config-modal";
 import { AdvancedExportModal, type ExportOptions } from "@/components/advanced-export-modal";
@@ -44,7 +43,6 @@ export default function SettingsScreen() {
       const newState = await AutoSyncService.toggleAutoSync();
       setAutoSyncEnabled(newState);
     } catch (error) {
-      console.error("Error toggling auto-sync:", error);
     }
   };
 
@@ -58,7 +56,6 @@ export default function SettingsScreen() {
         setAutoImportEnabled(true);
       }
     } catch (error) {
-      console.error("Error toggling auto-import:", error);
     }
   };
 
@@ -82,7 +79,6 @@ export default function SettingsScreen() {
       Alert.alert("Success", "Current month CSV exported successfully");
     } catch (error) {
       Alert.alert("Error", "Failed to export CSV file");
-      console.error(error);
     } finally {
       setExporting(false);
     }
@@ -96,7 +92,6 @@ export default function SettingsScreen() {
       Alert.alert("Success", "Current month Excel file exported successfully");
     } catch (error) {
       Alert.alert("Error", "Failed to export Excel file");
-      console.error(error);
     } finally {
       setExporting(false);
     }
@@ -110,7 +105,6 @@ export default function SettingsScreen() {
       Alert.alert("Success", "Current month PDF exported successfully");
     } catch (error) {
       Alert.alert("Error", "Failed to export PDF file");
-      console.error(error);
     } finally {
       setExporting(false);
     }
@@ -133,7 +127,6 @@ export default function SettingsScreen() {
       setExportFormat(null);
     } catch (error) {
       Alert.alert("Error", "Failed to export file");
-      console.error(error);
     } finally {
       setExporting(false);
     }

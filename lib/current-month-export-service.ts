@@ -199,7 +199,6 @@ export async function exportCurrentMonthAsXLS(
         encoding: FileSystem.EncodingType.Base64,
       });
     } catch (bufferError) {
-      console.error('Buffer conversion error:', bufferError);
       throw new Error('Failed to convert Excel file to base64 format');
     }
 
@@ -211,7 +210,6 @@ export async function exportCurrentMonthAsXLS(
       });
     }
   } catch (error) {
-    console.error('Error exporting as XLS:', error);
     throw error;
   }
 }
@@ -260,7 +258,6 @@ export async function exportCurrentMonthAsCSV(
       });
     }
   } catch (error) {
-    console.error('Error exporting as CSV:', error);
     throw error;
   }
 }
@@ -350,7 +347,6 @@ export async function exportCurrentMonthAsPDF(
       });
     }
   } catch (error) {
-    console.error('Error exporting as PDF:', error);
     throw error;
   }
 }

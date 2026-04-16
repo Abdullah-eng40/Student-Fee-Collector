@@ -16,7 +16,6 @@ export class AutoSyncService {
       // Default to true (enabled) if not set
       return value === null ? true : value === "true";
     } catch (error) {
-      console.error("Error checking auto-sync setting:", error);
       return true; // Default to enabled on error
     }
   }
@@ -27,9 +26,7 @@ export class AutoSyncService {
   static async enableAutoSync(): Promise<void> {
     try {
       await AsyncStorage.setItem(this.AUTO_SYNC_KEY, "true");
-      console.log("Auto-sync enabled");
     } catch (error) {
-      console.error("Error enabling auto-sync:", error);
       throw error;
     }
   }
@@ -40,9 +37,7 @@ export class AutoSyncService {
   static async disableAutoSync(): Promise<void> {
     try {
       await AsyncStorage.setItem(this.AUTO_SYNC_KEY, "false");
-      console.log("Auto-sync disabled");
     } catch (error) {
-      console.error("Error disabling auto-sync:", error);
       throw error;
     }
   }
@@ -61,7 +56,6 @@ export class AutoSyncService {
         return true;
       }
     } catch (error) {
-      console.error("Error toggling auto-sync:", error);
       throw error;
     }
   }
@@ -77,7 +71,6 @@ export class AutoSyncService {
       }
       return new Date(value);
     } catch (error) {
-      console.error("Error getting last auto-sync time:", error);
       return null;
     }
   }
@@ -89,9 +82,7 @@ export class AutoSyncService {
     try {
       const now = new Date().toISOString();
       await AsyncStorage.setItem(this.LAST_AUTO_SYNC_KEY, now);
-      console.log("Updated last auto-sync time:", now);
     } catch (error) {
-      console.error("Error updating last auto-sync time:", error);
       throw error;
     }
   }
@@ -102,9 +93,7 @@ export class AutoSyncService {
   static async resetAutoSyncSettings(): Promise<void> {
     try {
       await AsyncStorage.multiRemove([this.AUTO_SYNC_KEY, this.LAST_AUTO_SYNC_KEY]);
-      console.log("Auto-sync settings reset to defaults");
     } catch (error) {
-      console.error("Error resetting auto-sync settings:", error);
       throw error;
     }
   }

@@ -103,7 +103,6 @@ export async function pickAndParseXLSFile(): Promise<{
       hasHeaders,
     };
   } catch (error) {
-    console.error("Error picking/parsing XLS file:", error);
     throw error;
   }
 }
@@ -244,7 +243,6 @@ export async function downloadSampleTemplate(): Promise<void> {
       });
     }
   } catch (error) {
-    console.error("Error downloading sample template:", error);
     throw error;
   }
 }

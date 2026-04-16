@@ -51,15 +51,12 @@ export default function RootLayout() {
       try {
         const isAutoSyncEnabled = await AutoSyncService.isAutoSyncEnabled();
         if (isAutoSyncEnabled) {
-          console.log("Auto-sync enabled, syncing data from cloud...");
           await SupabaseSyncService.fetchStudentsFromCloud();
           await SupabaseSyncService.fetchPaymentsFromCloud();
           await AutoSyncService.updateLastAutoSyncTime();
           await updateSyncStatus("full");
-          console.log("Auto-sync completed successfully");
         }
       } catch (error) {
-        console.error("Auto-sync failed:", error);
       }
     };
     performAutoSync();
@@ -71,15 +68,12 @@ export default function RootLayout() {
       try {
         const isAutoImportEnabled = await AutomaticImportService.isAutoImportEnabled();
         if (isAutoImportEnabled) {
-          console.log("Auto-import enabled, checking for cloud data changes...");
           const dataImported = await CloudImportService.checkAndImportCloudData();
           if (dataImported) {
-            console.log("Cloud data imported successfully");
             await updateSyncStatus("full");
           }
         }
       } catch (error) {
-        console.error("Periodic auto-import failed:", error);
       }
     };
 

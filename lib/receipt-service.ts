@@ -121,7 +121,6 @@ export async function generatePaymentReceipt(data: ReceiptData): Promise<string>
 
     return filePath;
   } catch (error) {
-    console.error('Error generating receipt:', error);
     throw error;
   }
 }

@@ -21,7 +21,6 @@ export function hashPassword(password: string): string {
     return btoa(combined);
   } catch (error) {
     // If btoa fails, return the combined string as fallback
-    console.warn("Failed to hash password:", error);
     return combined;
   }
 }

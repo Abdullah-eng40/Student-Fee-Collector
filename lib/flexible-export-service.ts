@@ -138,7 +138,6 @@ export async function exportAsXLS(
       base64 = btoa(binary);
     }
   } catch (error) {
-    console.error('Failed to convert buffer to base64:', error);
     throw new Error('Failed to export Excel file');
   }
 
@@ -225,7 +224,6 @@ export async function exportAsPDF(
       base64Content = btoa(htmlContent);
     }
   } catch (error) {
-    console.error('Failed to convert HTML to base64:', error);
     throw new Error('Failed to export PDF');
   }
 
