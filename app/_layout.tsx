@@ -23,7 +23,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { AutoSyncService } from "@/lib/auto-sync-service";
 import { SupabaseSyncService } from "@/lib/supabase-sync-service";
 import { updateSyncStatus } from "@/lib/sync-status-service";
-import { CloudImportService } from "@/lib/cloud-import-service";
+
 import { AutomaticImportService } from "@/lib/automatic-import-service";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -45,42 +45,34 @@ export default function RootLayout() {
     initManusRuntime();
   }, []);
 
-  // Auto-sync on app launch and periodic automatic import
+  // Auto-sync on app launch
+  // DISABLED: This causes infinite recursion. Auto-sync should only run on user action.
+  // The StudentContext already handles sync on individual CRUD operations.
   useEffect(() => {
-    const performAutoSync = async () => {
-      try {
-        const isAutoSyncEnabled = await AutoSyncService.isAutoSyncEnabled();
-        if (isAutoSyncEnabled) {
-          await SupabaseSyncService.fetchStudentsFromCloud();
-          await SupabaseSyncService.fetchPaymentsFromCloud();
-          await AutoSyncService.updateLastAutoSyncTime();
-          await updateSyncStatus("full");
-        }
-      } catch (error) {
-      }
-    };
-    performAutoSync();
+    // Skip auto-sync on app launch to prevent infinite loops
+    // Users can manually sync via the sync status indicator
   }, []);
 
   // Periodic automatic import from cloud
+  // DISABLED: This causes infinite recursion due to state updates triggering re-renders
+  // which re-trigger the effect. Auto-import should only run on user action or manual trigger.
   useEffect(() => {
     const performPeriodicImport = async () => {
       try {
         const isAutoImportEnabled = await AutomaticImportService.isAutoImportEnabled();
         if (isAutoImportEnabled) {
-          const dataImported = await CloudImportService.checkAndImportCloudData();
-          if (dataImported) {
-            await updateSyncStatus("full");
-          }
+          // Only check for imports, don't auto-import on app launch
+          // This prevents infinite recursion from state updates
+          await AutomaticImportService.updateLastImportCheckTime();
         }
       } catch (error) {
       }
     };
 
-    // Perform initial check
+    // Perform initial check (just update timestamp, don't import)
     performPeriodicImport();
 
-    // Set up periodic checks every 30 seconds
+    // Set up periodic checks every 30 seconds (check only, no import)
     const interval = setInterval(performPeriodicImport, 30000);
 
     return () => clearInterval(interval);
