@@ -62,6 +62,7 @@ export async function exportAsCSV(
 
     return filePath;
   } catch (error) {
+    console.error("Error exporting CSV:", error);
     throw error;
   }
 }
@@ -119,6 +120,7 @@ export async function exportAsXLS(
 
     return filePath;
   } catch (error) {
+    console.error("Error exporting XLS:", error);
     throw error;
   }
 }
@@ -207,6 +209,7 @@ export async function exportAsPDF(
 
     return filePath;
   } catch (error) {
+    console.error("Error exporting PDF:", error);
     throw error;
   }
 }

@@ -1,6 +1,6 @@
 import { ScrollView, View, Text, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
-import { DragDropFileUpload } from "@/components/drag-drop-file-upload";
+
 import { DuplicateResolutionModal } from "@/components/duplicate-resolution-modal";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -55,6 +55,7 @@ export default function BulkImportScreen() {
       setImportType("xls");
     } catch (error) {
       Alert.alert("Error", "Failed to read XLS file. Please ensure it has columns: Student Name, Class, Monthly Fee");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -109,6 +110,7 @@ export default function BulkImportScreen() {
       setImportType("csv");
     } catch (error) {
       Alert.alert("Error", "Failed to read CSV file. Please ensure it has columns: Name, Class, Monthly Fee");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -141,6 +143,7 @@ export default function BulkImportScreen() {
       await proceedWithImport(importResult.students);
     } catch (error) {
       Alert.alert("Error", "Failed to import students");
+      console.error(error);
       setLoading(false);
     }
   };
@@ -173,6 +176,7 @@ export default function BulkImportScreen() {
       );
     } catch (error) {
       Alert.alert("Error", "Failed to import students");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -224,6 +228,7 @@ export default function BulkImportScreen() {
       );
     } catch (error) {
       Alert.alert("Error", "Failed to process duplicate resolution");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -242,6 +247,7 @@ export default function BulkImportScreen() {
       Alert.alert("Success", "Sample template downloaded successfully!");
     } catch (error) {
       Alert.alert("Error", "Failed to download template");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -308,6 +314,7 @@ export default function BulkImportScreen() {
       }
     } catch (error) {
       Alert.alert("Error", "Failed to read file. Please ensure it has the correct format.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -365,15 +372,7 @@ export default function BulkImportScreen() {
                 </Text>
               </View>
 
-              {/* Drag-Drop File Upload */}
-              <View className="mb-6">
-                <DragDropFileUpload
-                  onFileSelected={handleDragDropFile}
-                  acceptedFormats={[".xlsx", ".xls", ".csv"]}
-                  disabled={loading}
-                  loading={loading}
-                />
-              </View>
+
 
               {/* Divider */}
               <View className="flex-row items-center mb-6">

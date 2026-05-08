@@ -16,6 +16,7 @@ export const AutomaticImportService = {
       const value = await AsyncStorage.getItem(AUTO_IMPORT_ENABLED_KEY);
       return value === "true";
     } catch (error) {
+      console.error("Error checking auto import status:", error);
       return false;
     }
   },
@@ -26,7 +27,9 @@ export const AutomaticImportService = {
   async enableAutoImport(): Promise<void> {
     try {
       await AsyncStorage.setItem(AUTO_IMPORT_ENABLED_KEY, "true");
+      console.log("Auto import enabled");
     } catch (error) {
+      console.error("Error enabling auto import:", error);
       throw error;
     }
   },
@@ -37,7 +40,9 @@ export const AutomaticImportService = {
   async disableAutoImport(): Promise<void> {
     try {
       await AsyncStorage.setItem(AUTO_IMPORT_ENABLED_KEY, "false");
+      console.log("Auto import disabled");
     } catch (error) {
+      console.error("Error disabling auto import:", error);
       throw error;
     }
   },
@@ -50,6 +55,7 @@ export const AutomaticImportService = {
       const value = await AsyncStorage.getItem(LAST_IMPORT_CHECK_KEY);
       return value ? parseInt(value, 10) : 0;
     } catch (error) {
+      console.error("Error getting last import check time:", error);
       return 0;
     }
   },
@@ -62,6 +68,7 @@ export const AutomaticImportService = {
       const now = Date.now();
       await AsyncStorage.setItem(LAST_IMPORT_CHECK_KEY, now.toString());
     } catch (error) {
+      console.error("Error updating last import check time:", error);
       throw error;
     }
   },
@@ -75,6 +82,7 @@ export const AutomaticImportService = {
       const now = Date.now();
       return now - lastCheck > IMPORT_CHECK_INTERVAL;
     } catch (error) {
+      console.error("Error checking if should import:", error);
       return false;
     }
   },

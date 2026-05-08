@@ -28,6 +28,7 @@ export async function getSyncStatus(): Promise<SyncStatus> {
       isConnected: false,
     };
   } catch (error) {
+    console.error('Error reading sync status:', error);
     return {
       lastSyncTime: null,
       isConnected: false,
@@ -50,6 +51,7 @@ export async function updateSyncStatus(
     };
     await AsyncStorage.setItem(SYNC_STATUS_KEY, JSON.stringify(status));
   } catch (error) {
+    console.error('Error updating sync status:', error);
   }
 }
 
@@ -66,6 +68,7 @@ export async function updateSyncError(error: string): Promise<void> {
     };
     await AsyncStorage.setItem(SYNC_STATUS_KEY, JSON.stringify(status));
   } catch (err) {
+    console.error('Error updating sync error status:', err);
   }
 }
 
@@ -76,6 +79,7 @@ export async function clearSyncStatus(): Promise<void> {
   try {
     await AsyncStorage.removeItem(SYNC_STATUS_KEY);
   } catch (error) {
+    console.error('Error clearing sync status:', error);
   }
 }
 

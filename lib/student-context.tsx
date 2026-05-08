@@ -41,6 +41,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         await storage.initializeStorage();
         await refreshData();
       } catch (err) {
+        console.error("Failed to initialize storage:", err);
         setError("Failed to initialize app storage");
       }
     };
@@ -57,9 +58,10 @@ export function StudentProvider({ children }: { children: ReactNode }) {
       ]);
       setStudents(studentsData || []);
       setPayments(paymentsData || []);
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "An error occurred while loading data";
-        setError(errorMsg);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "An error occurred while loading data";
+      console.error("Refresh data error:", errorMsg);
+      setError(errorMsg);
       // Set empty data to allow app to continue
       setStudents([]);
       setPayments([]);
@@ -82,7 +84,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         await SupabaseSyncService.syncStudentsToCloud([newStudent]);
         await updateSyncStatus("full");
       } catch (syncErr) {
-        // Silently fail auto-sync to prevent user disruption
+        console.error("Auto-sync failed for new student:", syncErr);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add student");
@@ -99,7 +101,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         await SupabaseSyncService.syncStudentsToCloud([student]);
         await updateSyncStatus("full");
       } catch (syncErr) {
-        // Silently fail auto-sync to prevent user disruption
+        console.error("Auto-sync failed for updated student:", syncErr);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update student");
@@ -117,7 +119,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         await SupabaseSyncService.deleteStudentFromCloud(studentId);
         await updateSyncStatus("full");
       } catch (syncErr) {
-        // Silently fail auto-sync to prevent user disruption
+        console.error("Auto-sync failed for deleted student:", syncErr);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete student");
@@ -154,7 +156,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         await SupabaseSyncService.syncPaymentsToCloud([newPayment]);
         await updateSyncStatus("full");
       } catch (syncErr) {
-        // Silently fail auto-sync to prevent user disruption
+        console.error("Auto-sync failed for new payment:", syncErr);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add payment");
@@ -171,7 +173,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
         await SupabaseSyncService.deletePaymentFromCloud(paymentId);
         await updateSyncStatus("full");
       } catch (syncErr) {
-        // Silently fail auto-sync to prevent user disruption
+        console.error("Auto-sync failed for deleted payment:", syncErr);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete payment");

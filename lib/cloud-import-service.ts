@@ -16,15 +16,18 @@ export const CloudImportService = {
       // Check if auto-import is enabled
       const isEnabled = await AutomaticImportService.isAutoImportEnabled();
       if (!isEnabled) {
+        console.log("Auto-import is disabled, skipping cloud check");
         return false;
       }
 
       // Check if enough time has passed since last import check
       const shouldCheck = await AutomaticImportService.shouldCheckForImport();
       if (!shouldCheck) {
+        console.log("Not enough time passed since last import check");
         return false;
       }
 
+      console.log("Checking for cloud data changes...");
 
       // Fetch current data from cloud
       const cloudStudents = await SupabaseSyncService.fetchStudentsFromCloud();
@@ -39,10 +42,12 @@ export const CloudImportService = {
       const hasPaymentChanges = this.detectPaymentChanges(localPayments || [], cloudPayments);
 
       if (!hasStudentChanges && !hasPaymentChanges) {
+        console.log("No cloud data changes detected");
         await AutomaticImportService.updateLastImportCheckTime();
         return false;
       }
 
+      console.log("Cloud data changes detected, importing...");
 
       // Import new/updated data
       if (hasStudentChanges) {
@@ -56,12 +61,15 @@ export const CloudImportService = {
       // Update last import check time
       await AutomaticImportService.updateLastImportCheckTime();
 
+      console.log("Cloud data import completed successfully");
       return true;
     } catch (error) {
+      console.error("Error checking and importing cloud data:", error);
       // Still update the check time to avoid hammering the API
       try {
         await AutomaticImportService.updateLastImportCheckTime();
       } catch (e) {
+        console.error("Error updating import check time:", e);
       }
       return false;
     }
@@ -140,6 +148,7 @@ export const CloudImportService = {
     for (const cloudStudent of cloudStudents) {
       if (!localStudentIds.has(cloudStudent.id)) {
         // New student - save it
+        console.log(`Importing new student: ${cloudStudent.name}`);
         await storage.saveStudent(cloudStudent);
       } else {
         // Check if student was updated
@@ -151,6 +160,7 @@ export const CloudImportService = {
             cloudStudent.monthlyFee !== localStudent.monthlyFee ||
             cloudStudent.monthlyDueDate !== localStudent.monthlyDueDate)
         ) {
+          console.log(`Updating student: ${cloudStudent.name}`);
           await storage.updateStudent(cloudStudent);
         }
       }
@@ -166,11 +176,13 @@ export const CloudImportService = {
     for (const cloudPayment of cloudPayments) {
       if (!localPaymentIds.has(cloudPayment.id)) {
         // New payment - save it
+        console.log(`Importing new payment for student: ${cloudPayment.studentId}`);
         await storage.savePayment(cloudPayment);
       } else {
         // Check if payment was updated
         const localPayment = localPayments.find((p) => p.id === cloudPayment.id);
         if (localPayment && cloudPayment.amount !== localPayment.amount) {
+          console.log(`Updating payment: ${cloudPayment.id}`);
           // Delete old payment and save new one
           await storage.deletePayment(cloudPayment.id);
           await storage.savePayment(cloudPayment);

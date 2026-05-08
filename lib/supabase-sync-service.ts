@@ -13,7 +13,9 @@ export class SupabaseSyncService {
       // Check if tables exist by querying them
       await supabase.from("students").select("id").limit(1);
       await supabase.from("payments").select("id").limit(1);
+      console.log("Supabase tables initialized successfully");
     } catch (error) {
+      console.error("Error initializing Supabase tables:", error);
       throw error;
     }
   }
@@ -29,7 +31,6 @@ export class SupabaseSyncService {
         class: student.class,
         monthly_fee: student.monthlyFee,
         monthly_due_date: student.monthlyDueDate,
-        due_date: student.dueDate,
         email: student.email,
         password: student.password,
         created_at: student.createdAt,
@@ -45,8 +46,10 @@ export class SupabaseSyncService {
         throw error;
       }
 
+      console.log(`Synced ${supabaseStudents.length} students to cloud`);
       await this.logSyncOperation("completed");
     } catch (error) {
+      console.error("Error syncing students to cloud:", error);
       await this.logSyncOperation("failed", String(error));
       throw error;
     }
@@ -77,8 +80,10 @@ export class SupabaseSyncService {
         throw error;
       }
 
+      console.log(`Synced ${supabasePayments.length} payments to cloud`);
       await this.logSyncOperation("completed");
     } catch (error) {
+      console.error("Error syncing payments to cloud:", error);
       await this.logSyncOperation("failed", String(error));
       throw error;
     }
@@ -101,14 +106,15 @@ export class SupabaseSyncService {
         class: row.class,
         monthlyFee: row.monthly_fee,
         monthlyDueDate: row.monthly_due_date,
-        dueDate: row.due_date,
         email: row.email,
         password: row.password,
         createdAt: row.created_at,
       }));
 
+      console.log(`Fetched ${students.length} students from cloud`);
       return students;
     } catch (error) {
+      console.error("Error fetching students from cloud:", error);
       throw error;
     }
   }
@@ -137,8 +143,10 @@ export class SupabaseSyncService {
         amount: row.amount,
       }));
 
+      console.log(`Fetched ${payments.length} payments from cloud`);
       return payments;
     } catch (error) {
+      console.error("Error fetching payments from cloud:", error);
       throw error;
     }
   }
@@ -154,7 +162,9 @@ export class SupabaseSyncService {
         throw error;
       }
 
+      console.log(`Deleted student ${studentId} from cloud`);
     } catch (error) {
+      console.error("Error deleting student from cloud:", error);
       throw error;
     }
   }
@@ -170,7 +180,9 @@ export class SupabaseSyncService {
         throw error;
       }
 
+      console.log(`Deleted payment ${paymentId} from cloud`);
     } catch (error) {
+      console.error("Error deleting payment from cloud:", error);
       throw error;
     }
   }
@@ -190,8 +202,10 @@ export class SupabaseSyncService {
         status,
         errorMessage: errorMessage || null,
       };
+      console.log("Sync operation logged:", logEntry);
       // In a production app, you could store this in AsyncStorage for local history
     } catch (error) {
+      console.error("Error in logSyncOperation:", error);
     }
   }
 
@@ -203,6 +217,7 @@ export class SupabaseSyncService {
       const { error } = await supabase.from("students").select("id").limit(1);
       return !error;
     } catch (error) {
+      console.error("Error checking Supabase connection:", error);
       return false;
     }
   }

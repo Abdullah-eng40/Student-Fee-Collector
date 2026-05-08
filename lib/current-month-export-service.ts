@@ -1,5 +1,5 @@
 import * as FileSystem from 'expo-file-system/legacy';
-import { type Student, type Payment, CURRENCY_SYMBOL } from './types';
+import { Student, Payment, CURRENCY_SYMBOL } from './types';
 import { Workbook } from 'exceljs';
 import * as Sharing from 'expo-sharing';
 
@@ -199,6 +199,7 @@ export async function exportCurrentMonthAsXLS(
         encoding: FileSystem.EncodingType.Base64,
       });
     } catch (bufferError) {
+      console.error('Buffer conversion error:', bufferError);
       throw new Error('Failed to convert Excel file to base64 format');
     }
 
@@ -210,6 +211,7 @@ export async function exportCurrentMonthAsXLS(
       });
     }
   } catch (error) {
+    console.error('Error exporting as XLS:', error);
     throw error;
   }
 }
@@ -258,6 +260,7 @@ export async function exportCurrentMonthAsCSV(
       });
     }
   } catch (error) {
+    console.error('Error exporting as CSV:', error);
     throw error;
   }
 }
@@ -347,6 +350,7 @@ export async function exportCurrentMonthAsPDF(
       });
     }
   } catch (error) {
+    console.error('Error exporting as PDF:', error);
     throw error;
   }
 }

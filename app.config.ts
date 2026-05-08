@@ -65,6 +65,7 @@ const config: ExpoConfig = {
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
     permissions: [
+      "POST_NOTIFICATIONS",
       "READ_EXTERNAL_STORAGE",
       "WRITE_EXTERNAL_STORAGE",
       "INTERNET",

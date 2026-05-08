@@ -38,6 +38,7 @@ export async function initializeStorage(): Promise<void> {
       initializationError = null;
     } catch (error) {
       initializationError = error instanceof Error ? error : new Error("Unknown storage error");
+      console.error("Storage initialization failed:", initializationError);
       // Mark as initialized even on error to prevent retry loops
       isInitialized = true;
     } finally {
@@ -57,6 +58,7 @@ export async function getStudents(): Promise<Student[]> {
     await initializeStorage();
     
     if (initializationError) {
+      console.warn("Storage not available, returning empty array");
       return [];
     }
     
@@ -66,6 +68,7 @@ export async function getStudents(): Promise<Student[]> {
     const parsed = JSON.parse(data);
     return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
+    console.error("Error reading students:", error);
     return [];
   }
 }
@@ -78,6 +81,7 @@ export async function getPayments(): Promise<Payment[]> {
     await initializeStorage();
     
     if (initializationError) {
+      console.warn("Storage not available, returning empty array");
       return [];
     }
     
@@ -87,6 +91,7 @@ export async function getPayments(): Promise<Payment[]> {
     const parsed = JSON.parse(data);
     return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
+    console.error("Error reading payments:", error);
     return [];
   }
 }
@@ -113,6 +118,7 @@ export async function saveStudent(student: Student): Promise<void> {
     
     await AsyncStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
   } catch (error) {
+    console.error("Error saving student:", error);
     throw error;
   }
 }
@@ -130,6 +136,7 @@ export async function saveStudents(students: Student[]): Promise<void> {
     
     await AsyncStorage.setItem(STUDENTS_KEY, JSON.stringify(students));
   } catch (error) {
+    console.error("Error saving students:", error);
     throw error;
   }
 }
@@ -149,6 +156,7 @@ export async function deleteStudent(studentId: string | number): Promise<void> {
     const filtered = students.filter((s) => s.id !== studentId);
     await AsyncStorage.setItem(STUDENTS_KEY, JSON.stringify(filtered));
   } catch (error) {
+    console.error("Error deleting student:", error);
     throw error;
   }
 }
@@ -175,6 +183,7 @@ export async function savePayment(payment: Payment): Promise<void> {
     
     await AsyncStorage.setItem(PAYMENTS_KEY, JSON.stringify(payments));
   } catch (error) {
+    console.error("Error saving payment:", error);
     throw error;
   }
 }
@@ -192,6 +201,7 @@ export async function savePayments(payments: Payment[]): Promise<void> {
     
     await AsyncStorage.setItem(PAYMENTS_KEY, JSON.stringify(payments));
   } catch (error) {
+    console.error("Error saving payments:", error);
     throw error;
   }
 }
@@ -211,6 +221,7 @@ export async function deletePayment(paymentId: string | number): Promise<void> {
     const filtered = payments.filter((p) => p.id !== paymentId);
     await AsyncStorage.setItem(PAYMENTS_KEY, JSON.stringify(filtered));
   } catch (error) {
+    console.error("Error deleting payment:", error);
     throw error;
   }
 }
@@ -223,6 +234,7 @@ export async function getStudentsWithPayments(): Promise<StudentWithPayments[]> 
     await initializeStorage();
     
     if (initializationError) {
+      console.warn("Storage not available, returning empty array");
       return [];
     }
     
@@ -234,6 +246,7 @@ export async function getStudentsWithPayments(): Promise<StudentWithPayments[]> 
       payments: payments.filter((p) => p.studentId === student.id),
     }));
   } catch (error) {
+    console.error("Error getting students with payments:", error);
     return [];
   }
 }
@@ -260,6 +273,7 @@ export async function getStudentWithPayments(studentId: string): Promise<Student
       payments: payments.filter((p) => p.studentId === studentId),
     };
   } catch (error) {
+    console.error("Error getting student with payments:", error);
     return null;
   }
 }
@@ -278,6 +292,7 @@ export async function getPaymentForMonth(
       (p) => p.studentId === studentId && p.month === month && p.year === year
     );
   } catch (error) {
+    console.error("Error getting payment for month:", error);
     return undefined;
   }
 }
@@ -290,6 +305,7 @@ export async function getStudentPayments(studentId: string): Promise<Payment[]> 
     const payments = await getPayments();
     return payments.filter((p) => p.studentId === studentId);
   } catch (error) {
+    console.error("Error getting student payments:", error);
     return [];
   }
 }
@@ -303,6 +319,7 @@ export async function clearStorage(): Promise<void> {
     isInitialized = false;
     initializationError = null;
   } catch (error) {
+    console.error("Error clearing storage:", error);
     throw error;
   }
 }
